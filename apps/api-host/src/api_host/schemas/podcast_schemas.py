@@ -48,6 +48,12 @@ class AudioGenerationResult(BaseModel):
     duration_seconds: int
 
 
+class DocumentExtractionResult(BaseModel):
+    filename: str
+    pages: int
+    text: str
+
+
 class GeneratePodcastResponse(BaseModel):
     podcast_id: str
     title: str
