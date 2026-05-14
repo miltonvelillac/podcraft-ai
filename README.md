@@ -6,14 +6,14 @@ PodCraft AI is an agentic AI application that transforms plain text and PDF docu
 
 ```txt
 Angular Frontend
-   ↓
+   |
 Python FastAPI Backend / MCP Host
-   ↓
+   |
 MCP Host Orchestrator
-   ├── Document MCP Server
-   ├── Internal Script Agent
-   └── Audio MCP Server
-   ↓
+   |-- Document MCP Server
+   |-- Internal Script Agent
+   `-- Audio MCP Server
+   |
 Generated Podcast Audio
 ```
 
@@ -39,6 +39,94 @@ generated/
 - `docker compose` for local orchestration.
 - `make` for common commands.
 
+## Local Development
+
+Install Python dependencies:
+
+```bash
+uv sync
+```
+
+Start the FastAPI host:
+
+```bash
+uv run uvicorn api_host.main:app --app-dir apps/api-host/src --reload --port 8000
+```
+
+Then open Swagger:
+
+```txt
+http://localhost:8000/docs
+```
+
+Health check:
+
+```txt
+http://localhost:8000/health
+```
+
+Generate podcast endpoint:
+
+```txt
+POST http://localhost:8000/api/podcasts/generate
+```
+
+Example JSON body:
+
+```json
+{
+  "input_type": "text",
+  "text": "FastAPI coordinates the podcast generation workflow.",
+  "style": "educational",
+  "voice": "default",
+  "target_duration": "short"
+}
+```
+
+## Tests
+
+Run all Python tests:
+
+```bash
+uv run pytest
+```
+
+Run only the API host tests:
+
+```bash
+uv run pytest apps/api-host/tests
+```
+
+Run one specific test file:
+
+```bash
+uv run pytest apps/api-host/tests/test_podcast_pipeline.py
+```
+
+Run linting:
+
+```bash
+uv run ruff check .
+```
+
+## Make Commands
+
+The root `Makefile` also provides shortcuts:
+
+```bash
+make api
+make test
+make lint
+make dev
+```
+
+Current command meanings:
+
+- `make api` starts the FastAPI host on port `8000`.
+- `make test` runs Python tests and frontend tests.
+- `make lint` runs Ruff for Python code.
+- `make dev` starts Docker Compose.
+
 ## Current Status
 
-This repository currently contains the base monorepo configuration and documentation scaffolding. The Angular app, FastAPI host, MCP servers, and podcast pipeline will be added incrementally.
+This repository currently contains the base monorepo configuration, a FastAPI host, a `/health` endpoint, and a mocked `POST /api/podcasts/generate` flow for text input. The Angular app, MCP servers, PDF extraction, and audio generation will be added incrementally.
