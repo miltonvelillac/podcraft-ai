@@ -1,0 +1,33 @@
+services:
+  api-host:
+    image: ghcr.io/astral-sh/uv:python3.12-bookworm-slim
+    working_dir: /workspace
+    command: uv run uvicorn api_host.main:app --app-dir apps/api-host/src --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/workspace
+    env_file:
+      - .env.example
+
+  document-mcp-server:
+    image: ghcr.io/astral-sh/uv:python3.12-bookworm-slim
+    working_dir: /workspace
+    command: uv run python services/document-mcp-server/src/document_mcp_server/server.py
+    ports:
+      - "8101:8101"
+    volumes:
+      - .:/workspace
+    env_file:
+      - .env.example
+
+  audio-mcp-server:
+    image: ghcr.io/astral-sh/uv:python3.12-bookworm-slim
+    working_dir: /workspace
+    command: uv run python services/audio-mcp-server/src/audio_mcp_server/server.py
+    ports:
+      - "8102:8102"
+    volumes:
+      - .:/workspace
+    env_file:
+      - .env.example

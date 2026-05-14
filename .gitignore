@@ -1,0 +1,32 @@
+# Environment
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+dist/
+build/
+*.egg-info/
+
+# Node / Angular
+node_modules/
+.angular/
+coverage/
+apps/web-angular/dist/
+
+# Generated project output
+generated/audio/*
+generated/documents/*
+!generated/audio/.gitkeep
+!generated/documents/.gitkeep
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
