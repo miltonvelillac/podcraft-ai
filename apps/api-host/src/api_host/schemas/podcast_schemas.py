@@ -42,6 +42,12 @@ class PodcastScript(BaseModel):
     estimated_duration_minutes: int
 
 
+class AudioGenerationResult(BaseModel):
+    audio_url: str
+    format: str
+    duration_seconds: int
+
+
 class GeneratePodcastResponse(BaseModel):
     podcast_id: str
     title: str
