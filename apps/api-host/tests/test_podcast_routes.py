@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
 from api_host.main import app
+from pdf_test_utils import build_pdf_with_text
 
 
 client = TestClient(app)
@@ -33,13 +34,19 @@ def test_generate_podcast_from_multipart_pdf() -> None:
             "voice": "default",
             "target_duration": "medium",
         },
-        files={"file": ("source.pdf", b"%PDF-1.7 mock content", "application/pdf")},
+        files={
+            "file": (
+                "source.pdf",
+                build_pdf_with_text("Podcast route PDF text"),
+                "application/pdf",
+            )
+        },
     )
 
     assert response.status_code == 200
     body = response.json()
     assert body["podcast_id"].startswith("podcast-")
-    assert "mocked text extracted" in body["script"]
+    assert "Podcast route PDF text" in body["script"]
     assert body["duration_seconds"] == 240
 
 
@@ -81,7 +88,7 @@ def test_generate_podcast_rejects_unknown_form_fields() -> None:
             "voice": "default",
             "target-duration": "short",
         },
-        files={"file": ("source.pdf", b"%PDF-1.7 mock content", "application/pdf")},
+        files={"file": ("source.pdf", build_pdf_with_text("Unknown field test"), "application/pdf")},
     )
 
     assert response.status_code == 400

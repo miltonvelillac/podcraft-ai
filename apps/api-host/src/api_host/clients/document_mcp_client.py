@@ -1,28 +1,23 @@
 from api_host.schemas.podcast_schemas import DocumentExtractionResult
+from document_mcp_server.tools.clean_text import clean_extracted_text as clean_text_tool
+from document_mcp_server.tools.extract_pdf_text import extract_text_from_pdf as extract_pdf_text_tool
 
 
 class DocumentMcpClient:
     """Client boundary for the Document MCP Server.
 
-    The current implementation is mocked. The real implementation will call document tools
-    exposed by the Document MCP Server.
+    This currently calls the document tool implementation locally. Later this boundary can
+    switch to a real MCP transport without changing the podcast pipeline.
     """
 
     def extract_text_from_pdf(self, filename: str, content: bytes) -> DocumentExtractionResult:
-        if not filename.lower().endswith(".pdf"):
-            raise ValueError("Only PDF files are supported.")
-        if not content:
-            raise ValueError("PDF file cannot be empty.")
-
-        extracted_text = self.clean_extracted_text(
-            "This is mocked text extracted from the uploaded PDF document."
-        )
+        extraction_result = extract_pdf_text_tool(filename=filename, content=content)
 
         return DocumentExtractionResult(
-            filename=filename,
-            pages=1,
-            text=extracted_text,
+            filename=extraction_result.filename,
+            pages=extraction_result.pages,
+            text=extraction_result.text,
         )
 
     def clean_extracted_text(self, text: str) -> str:
-        return " ".join(text.split())
+        return clean_text_tool(text)

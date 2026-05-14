@@ -1,19 +1,20 @@
 import pytest
 
 from api_host.clients.document_mcp_client import DocumentMcpClient
+from pdf_test_utils import build_pdf_with_text
 
 
-def test_document_client_extracts_mock_pdf_text() -> None:
+def test_document_client_extracts_real_pdf_text() -> None:
     client = DocumentMcpClient()
 
     result = client.extract_text_from_pdf(
         filename="source.pdf",
-        content=b"%PDF-1.7 mock content",
+        content=build_pdf_with_text("Hello from API Host PDF"),
     )
 
     assert result.filename == "source.pdf"
     assert result.pages == 1
-    assert result.text == "This is mocked text extracted from the uploaded PDF document."
+    assert "Hello from API Host PDF" in result.text
 
 
 def test_document_client_rejects_empty_pdf() -> None:
@@ -35,4 +36,4 @@ def test_document_client_cleans_extracted_text() -> None:
 
     result = client.clean_extracted_text("  line one\n\nline two\tline three  ")
 
-    assert result == "line one line two line three"
+    assert result == "line one\n\nline two line three"
