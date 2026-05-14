@@ -8,7 +8,7 @@ client = TestClient(app)
 
 def test_generate_podcast_from_json_text() -> None:
     response = client.post(
-        "/api/podcasts/generate",
+        "/api/podcasts/generate/text",
         json={
             "input_type": "text",
             "text": "FastAPI coordinates the podcast generation workflow.",
@@ -27,7 +27,7 @@ def test_generate_podcast_from_json_text() -> None:
 
 def test_generate_podcast_from_multipart_pdf() -> None:
     response = client.post(
-        "/api/podcasts/generate",
+        "/api/podcasts/generate/pdf",
         data={
             "style": "conversational",
             "voice": "default",
@@ -45,7 +45,7 @@ def test_generate_podcast_from_multipart_pdf() -> None:
 
 def test_generate_podcast_rejects_missing_pdf_file() -> None:
     response = client.post(
-        "/api/podcasts/generate",
+        "/api/podcasts/generate/pdf",
         data={
             "style": "educational",
             "voice": "default",
@@ -53,5 +53,52 @@ def test_generate_podcast_rejects_missing_pdf_file() -> None:
         },
     )
 
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["loc"] == ["body", "file"]
+
+
+def test_generate_podcast_rejects_unknown_json_fields() -> None:
+    response = client.post(
+        "/api/podcasts/generate/text",
+        json={
+            "input_type": "text",
+            "text": "FastAPI coordinates the podcast generation workflow.",
+            "style": "educational",
+            "voice": "default",
+            "target-duration": "short",
+        },
+    )
+
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["type"] == "extra_forbidden"
+
+
+def test_generate_podcast_rejects_unknown_form_fields() -> None:
+    response = client.post(
+        "/api/podcasts/generate/pdf",
+        data={
+            "style": "educational",
+            "voice": "default",
+            "target-duration": "short",
+        },
+        files={"file": ("source.pdf", b"%PDF-1.7 mock content", "application/pdf")},
+    )
+
     assert response.status_code == 400
-    assert response.json()["detail"] == "PDF file is required."
+    assert "Unknown form field(s): target-duration" in response.json()["detail"]
+
+
+def test_generate_text_endpoint_rejects_pdf_input_type() -> None:
+    response = client.post(
+        "/api/podcasts/generate/text",
+        json={
+            "input_type": "pdf",
+            "text": "This should use the PDF endpoint.",
+            "style": "educational",
+            "voice": "default",
+            "target_duration": "short",
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Use /api/podcasts/generate/pdf for PDF input."

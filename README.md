@@ -65,10 +65,11 @@ Health check:
 http://localhost:8000/health
 ```
 
-Generate podcast endpoint:
+Generate podcast endpoints:
 
 ```txt
-POST http://localhost:8000/api/podcasts/generate
+POST http://localhost:8000/api/podcasts/generate/text
+POST http://localhost:8000/api/podcasts/generate/pdf
 ```
 
 Example JSON body for text input:
@@ -86,7 +87,7 @@ Example JSON body for text input:
 Example PDF upload with curl:
 
 ```bash
-curl -X POST http://localhost:8000/api/podcasts/generate \
+curl -X POST http://localhost:8000/api/podcasts/generate/pdf \
   -F "file=@example.pdf" \
   -F "style=educational" \
   -F "voice=default" \
@@ -139,4 +140,4 @@ Current command meanings:
 
 ## Current Status
 
-This repository currently contains the base monorepo configuration, a FastAPI host, a `/health` endpoint, and a mocked `POST /api/podcasts/generate` flow for text and PDF input. The Angular app, MCP servers, real PDF extraction, and audio generation will be added incrementally.
+This repository currently contains the base monorepo configuration, a FastAPI host, a `/health` endpoint, and mocked podcast generation endpoints for text and PDF input. The Angular app, MCP servers, real PDF extraction, and audio generation will be added incrementally.
