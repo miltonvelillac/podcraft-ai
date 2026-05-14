@@ -71,7 +71,7 @@ Generate podcast endpoint:
 POST http://localhost:8000/api/podcasts/generate
 ```
 
-Example JSON body:
+Example JSON body for text input:
 
 ```json
 {
@@ -81,6 +81,16 @@ Example JSON body:
   "voice": "default",
   "target_duration": "short"
 }
+```
+
+Example PDF upload with curl:
+
+```bash
+curl -X POST http://localhost:8000/api/podcasts/generate \
+  -F "file=@example.pdf" \
+  -F "style=educational" \
+  -F "voice=default" \
+  -F "target_duration=short"
 ```
 
 ## Tests
@@ -129,4 +139,4 @@ Current command meanings:
 
 ## Current Status
 
-This repository currently contains the base monorepo configuration, a FastAPI host, a `/health` endpoint, and a mocked `POST /api/podcasts/generate` flow for text input. The Angular app, MCP servers, PDF extraction, and audio generation will be added incrementally.
+This repository currently contains the base monorepo configuration, a FastAPI host, a `/health` endpoint, and a mocked `POST /api/podcasts/generate` flow for text and PDF input. The Angular app, MCP servers, real PDF extraction, and audio generation will be added incrementally.
