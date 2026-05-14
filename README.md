@@ -140,4 +140,19 @@ Current command meanings:
 
 ## Current Status
 
-This repository currently contains the base monorepo configuration, a FastAPI host, a `/health` endpoint, and mocked podcast generation endpoints for text and PDF input. The Angular app, MCP servers, real PDF extraction, and audio generation will be added incrementally.
+This repository currently contains the base monorepo configuration, a FastAPI host, a `/health` endpoint, podcast generation endpoints for text and PDF input, and real local PDF text extraction through the document tools.
+
+## MCP Integration Status
+
+The API Host currently uses `DocumentMcpClient` as a boundary, but that client calls the document tools locally in-process. This is an intentional interim step so the PDF extraction logic can be built and tested before introducing MCP transport.
+
+Next MCP step:
+
+- Wrap the document tools in `services/document-mcp-server/src/document_mcp_server/server.py`.
+- Expose `extract_text_from_pdf`, `clean_extracted_text`, and `get_document_metadata` as MCP tools.
+- Update `DocumentMcpClient` to call the Document MCP Server through STDIO.
+- Repeat the same pattern for the Audio MCP Server.
+
+STDIO is the intended MCP transport for the MVP because it keeps local orchestration simple. After the MVP is working end to end, Streamable HTTP should be considered for running the Document and Audio MCP Servers as independent services, especially under Docker Compose.
+
+The Script Agent remains internal to the API Host for the MVP. It must not be converted into an MCP server in the first version.
