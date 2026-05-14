@@ -18,3 +18,21 @@ def test_pipeline_generates_mock_podcast_from_text() -> None:
     assert "FastAPI coordinates" in response.script
     assert response.audio_url == f"/generated/audio/{response.podcast_id}.mp3"
     assert response.duration_seconds == 120
+
+
+def test_pipeline_generates_mock_podcast_from_pdf() -> None:
+    pipeline = PodcastPipeline()
+
+    response = pipeline.generate_from_pdf(
+        filename="source.pdf",
+        content=b"%PDF-1.7 mock content",
+        style=PodcastStyle.CONVERSATIONAL,
+        voice="default",
+        target_duration=PodcastTargetDuration.MEDIUM,
+    )
+
+    assert response.podcast_id.startswith("podcast-")
+    assert response.title == "This Is Mocked Text Extracted From The Uploaded"
+    assert "mocked text extracted" in response.script
+    assert response.audio_url == f"/generated/audio/{response.podcast_id}.mp3"
+    assert response.duration_seconds == 240
