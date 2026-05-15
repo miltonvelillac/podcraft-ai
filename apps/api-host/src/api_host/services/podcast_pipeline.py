@@ -30,7 +30,7 @@ class PodcastPipeline:
             target_duration=request.target_duration,
         )
 
-    def generate_from_pdf(
+    async def generate_from_pdf(
         self,
         filename: str,
         content: bytes,
@@ -38,7 +38,10 @@ class PodcastPipeline:
         voice: str,
         target_duration: PodcastTargetDuration,
     ) -> GeneratePodcastResponse:
-        document = self._document_client.extract_text_from_pdf(filename=filename, content=content)
+        document = await self._document_client.extract_text_from_pdf(
+            filename=filename,
+            content=content,
+        )
         return self._generate_from_clean_text(
             text=document.text,
             style=style,

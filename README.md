@@ -144,14 +144,26 @@ This repository currently contains the base monorepo configuration, a FastAPI ho
 
 ## MCP Integration Status
 
-The API Host currently uses `DocumentMcpClient` as a boundary, but that client calls the document tools locally in-process. This is an intentional interim step so the PDF extraction logic can be built and tested before introducing MCP transport.
+The API Host now uses `DocumentMcpClient` to call the Document MCP Server through STDIO. PDF bytes are base64-encoded before being sent through MCP because MCP messages are JSON-RPC payloads.
 
-Next MCP step:
+Current Document MCP flow:
 
-- Wrap the document tools in `services/document-mcp-server/src/document_mcp_server/server.py`.
-- Expose `extract_text_from_pdf`, `clean_extracted_text`, and `get_document_metadata` as MCP tools.
-- Update `DocumentMcpClient` to call the Document MCP Server through STDIO.
+```txt
+API Host
+   |
+DocumentMcpClient
+   |
+MCP STDIO transport
+   |
+Document MCP Server
+   |
+Document tools
+```
+
+Next MCP steps:
+
 - Repeat the same pattern for the Audio MCP Server.
+- Keep STDIO as the first transport for the MVP.
 
 STDIO is the intended MCP transport for the MVP because it keeps local orchestration simple. After the MVP is working end to end, Streamable HTTP should be considered for running the Document and Audio MCP Servers as independent services, especially under Docker Compose.
 

@@ -91,16 +91,9 @@ MCP Host
 
 ## Current MCP Integration Status
 
-The API Host currently uses MCP client boundary classes, such as `DocumentMcpClient`, but the document client calls the document tools locally in-process.
+The API Host uses MCP client boundary classes, such as `DocumentMcpClient` and `AudioMcpClient`.
 
-This is an intentional interim step:
-
-1. Build and test tool logic as plain Python functions.
-2. Use those tools locally from the API Host while the MVP pipeline is taking shape.
-3. Wrap the tools in real MCP servers.
-4. Update the host clients to call those MCP servers through STDIO.
-
-The next MCP implementation step is:
+The Document MCP integration currently uses STDIO:
 
 ```txt
 API Host
@@ -114,10 +107,12 @@ Document MCP Server
 Document tools
 ```
 
+PDF bytes are base64-encoded before being sent through MCP because MCP messages are JSON-RPC payloads.
+
+The next MCP implementation step is to repeat the same pattern for `AudioMcpClient` and the Audio MCP Server.
+
 Rules:
 
-- Do not remove the client boundary just because it currently calls tools locally.
-- The local tool call is temporary and should be replaced with MCP STDIO transport.
 - Use STDIO as the first MCP transport for the MVP.
 - Consider Streamable HTTP after the MVP is working end to end, especially when running MCP servers as independent Docker Compose services.
 - Keep `DocumentMcpClient` and `AudioMcpClient` as the host-side integration points.

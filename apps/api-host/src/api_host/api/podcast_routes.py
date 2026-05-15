@@ -53,7 +53,7 @@ async def generate_podcast_from_pdf(
     try:
         content = await file.read()
         pipeline = PodcastPipeline()
-        return pipeline.generate_from_pdf(
+        return await pipeline.generate_from_pdf(
             filename=file.filename or "upload.pdf",
             content=content,
             style=form.style,

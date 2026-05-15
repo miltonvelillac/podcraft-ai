@@ -1,3 +1,5 @@
+import anyio
+
 from api_host.schemas.podcast_schemas import GeneratePodcastRequest, PodcastStyle, PodcastTargetDuration
 from api_host.services.podcast_pipeline import PodcastPipeline
 from pdf_test_utils import build_pdf_with_text
@@ -24,12 +26,14 @@ def test_pipeline_generates_mock_podcast_from_text() -> None:
 def test_pipeline_generates_podcast_from_pdf() -> None:
     pipeline = PodcastPipeline()
 
-    response = pipeline.generate_from_pdf(
-        filename="source.pdf",
-        content=build_pdf_with_text("Pipeline PDF text"),
-        style=PodcastStyle.CONVERSATIONAL,
-        voice="default",
-        target_duration=PodcastTargetDuration.MEDIUM,
+    response = anyio.run(
+        _generate_from_pdf,
+        pipeline,
+        "source.pdf",
+        build_pdf_with_text("Pipeline PDF text"),
+        PodcastStyle.CONVERSATIONAL,
+        "default",
+        PodcastTargetDuration.MEDIUM,
     )
 
     assert response.podcast_id.startswith("podcast-")
@@ -37,3 +41,20 @@ def test_pipeline_generates_podcast_from_pdf() -> None:
     assert "Pipeline PDF text" in response.script
     assert response.audio_url == f"/generated/audio/{response.podcast_id}.mp3"
     assert response.duration_seconds == 240
+
+
+async def _generate_from_pdf(
+    pipeline: PodcastPipeline,
+    filename: str,
+    content: bytes,
+    style: PodcastStyle,
+    voice: str,
+    target_duration: PodcastTargetDuration,
+):
+    return await pipeline.generate_from_pdf(
+        filename=filename,
+        content=content,
+        style=style,
+        voice=voice,
+        target_duration=target_duration,
+    )
