@@ -19,7 +19,7 @@ ALLOWED_PDF_FORM_FIELDS = {field.value for field in PodcastFormField}
 
 
 @router.post("/generate/text", response_model=GeneratePodcastResponse)
-def generate_podcast_from_text(request: GeneratePodcastRequest) -> GeneratePodcastResponse:
+async def generate_podcast_from_text(request: GeneratePodcastRequest) -> GeneratePodcastResponse:
     if request.input_type != PodcastInputType.TEXT:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -27,7 +27,7 @@ def generate_podcast_from_text(request: GeneratePodcastRequest) -> GeneratePodca
         )
 
     pipeline = PodcastPipeline()
-    return pipeline.generate_from_text(request)
+    return await pipeline.generate_from_text(request)
 
 
 @router.post("/generate/pdf", response_model=GeneratePodcastResponse)

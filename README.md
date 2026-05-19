@@ -140,30 +140,25 @@ Current command meanings:
 
 ## Current Status
 
-This repository currently contains the base monorepo configuration, a FastAPI host, a `/health` endpoint, podcast generation endpoints for text and PDF input, and real local PDF text extraction through the document tools.
+This repository currently contains the base monorepo configuration, a FastAPI host, a `/health` endpoint, podcast generation endpoints for text and PDF input, real local PDF text extraction through the Document MCP Server, and mocked audio generation through the Audio MCP Server.
 
 ## MCP Integration Status
 
-The API Host now uses `DocumentMcpClient` to call the Document MCP Server through STDIO. PDF bytes are base64-encoded before being sent through MCP because MCP messages are JSON-RPC payloads.
+The API Host now uses `DocumentMcpClient` and `AudioMcpClient` to call the Document and Audio MCP Servers through STDIO. PDF bytes are base64-encoded before being sent through MCP because MCP messages are JSON-RPC payloads.
 
-Current Document MCP flow:
+Current MCP flow:
 
 ```txt
 API Host
    |
-DocumentMcpClient
+DocumentMcpClient / AudioMcpClient
    |
 MCP STDIO transport
    |
-Document MCP Server
+Document MCP Server / Audio MCP Server
    |
-Document tools
+Document tools / Audio tools
 ```
-
-Next MCP steps:
-
-- Repeat the same pattern for the Audio MCP Server.
-- Keep STDIO as the first transport for the MVP.
 
 STDIO is the intended MCP transport for the MVP because it keeps local orchestration simple. After the MVP is working end to end, Streamable HTTP should be considered for running the Document and Audio MCP Servers as independent services, especially under Docker Compose.
 

@@ -14,7 +14,7 @@ def test_pipeline_generates_mock_podcast_from_text() -> None:
         target_duration=PodcastTargetDuration.SHORT,
     )
 
-    response = pipeline.generate_from_text(request)
+    response = anyio.run(_generate_from_text, pipeline, request)
 
     assert response.podcast_id.startswith("podcast-")
     assert response.title == "Fastapi Coordinates The Podcast Generation Workflow"
@@ -58,3 +58,10 @@ async def _generate_from_pdf(
         voice=voice,
         target_duration=target_duration,
     )
+
+
+async def _generate_from_text(
+    pipeline: PodcastPipeline,
+    request: GeneratePodcastRequest,
+):
+    return await pipeline.generate_from_text(request)

@@ -22,8 +22,8 @@ class PodcastPipeline:
         self._audio_client = audio_client or AudioMcpClient()
         self._document_client = document_client or DocumentMcpClient()
 
-    def generate_from_text(self, request: GeneratePodcastRequest) -> GeneratePodcastResponse:
-        return self._generate_from_clean_text(
+    async def generate_from_text(self, request: GeneratePodcastRequest) -> GeneratePodcastResponse:
+        return await self._generate_from_clean_text(
             text=request.text,
             style=request.style,
             voice=request.voice,
@@ -42,14 +42,14 @@ class PodcastPipeline:
             filename=filename,
             content=content,
         )
-        return self._generate_from_clean_text(
+        return await self._generate_from_clean_text(
             text=document.text,
             style=style,
             voice=voice,
             target_duration=target_duration,
         )
 
-    def _generate_from_clean_text(
+    async def _generate_from_clean_text(
         self,
         text: str,
         style: PodcastStyle,
@@ -63,7 +63,7 @@ class PodcastPipeline:
         )
         podcast_id = f"podcast-{uuid4().hex[:8]}"
         duration_seconds = script.estimated_duration_minutes * 60
-        audio = self._audio_client.generate_audio_from_text(
+        audio = await self._audio_client.generate_audio_from_text(
             podcast_id=podcast_id,
             script=script.script,
             voice=voice,
