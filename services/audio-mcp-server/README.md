@@ -22,6 +22,25 @@ The server runs over MCP STDIO and exposes:
 
 The mock keeps the host pipeline end to end while leaving room to replace the implementation with a real TTS provider later.
 
+## TTS Provider Layer
+
+Audio synthesis is isolated behind `TtsProvider`:
+
+```txt
+Audio MCP tool
+  |
+TtsProvider
+  `-- MockTtsProvider
+```
+
+Provider selection is controlled by:
+
+```env
+TTS_PROVIDER=mock
+```
+
+Only `mock` is implemented right now. The next provider should be added without changing the API Host or frontend contracts.
+
 Run the server directly:
 
 ```bash
