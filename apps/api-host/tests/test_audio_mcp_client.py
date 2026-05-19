@@ -3,10 +3,11 @@ import pytest
 
 from api_host.clients.errors import McpToolInputError
 from api_host.clients.audio_mcp_client import AudioMcpClient
+from podcraft_contracts import AiProvider
 
 
 def test_audio_client_generates_mock_audio_metadata_over_mcp(monkeypatch) -> None:
-    monkeypatch.setenv("TTS_PROVIDER", "mock")
+    monkeypatch.setenv("TTS_PROVIDER", AiProvider.MOCK)
     client = AudioMcpClient()
 
     result = anyio.run(
@@ -25,7 +26,7 @@ def test_audio_client_generates_mock_audio_metadata_over_mcp(monkeypatch) -> Non
 
 
 def test_audio_client_rejects_empty_script(monkeypatch) -> None:
-    monkeypatch.setenv("TTS_PROVIDER", "mock")
+    monkeypatch.setenv("TTS_PROVIDER", AiProvider.MOCK)
     client = AudioMcpClient()
 
     with pytest.raises(McpToolInputError, match="Script cannot be empty"):

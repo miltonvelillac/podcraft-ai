@@ -10,12 +10,12 @@ from audio_mcp_server.tts.errors import (
     TtsServiceError,
 )
 from audio_mcp_server.tts.provider import SynthesisRequest, SynthesisResult
-from podcraft_contracts import AUDIO_VOICE_ALIASES, LANGUAGE_NAMES
+from podcraft_contracts import AUDIO_VOICE_ALIASES, AudioFormat, EnvVar, LANGUAGE_NAMES
 
 
 DEFAULT_OPENAI_TTS_MODEL = "gpt-4o-mini-tts"
 DEFAULT_OPENAI_TTS_VOICE = "coral"
-DEFAULT_OPENAI_TTS_RESPONSE_FORMAT = "wav"
+DEFAULT_OPENAI_TTS_RESPONSE_FORMAT = AudioFormat.WAV
 DEFAULT_OPENAI_TTS_INSTRUCTIONS = "Speak clearly in a warm podcast narration style."
 OPENAI_VOICES = {
     "alloy",
@@ -76,14 +76,14 @@ class OpenAiTtsProvider:
         instructions: str | None = None,
     ) -> None:
         self._client = client or _build_openai_client()
-        self._model = model or os.getenv("OPENAI_TTS_MODEL", DEFAULT_OPENAI_TTS_MODEL)
-        self._voice = voice or os.getenv("OPENAI_TTS_VOICE", DEFAULT_OPENAI_TTS_VOICE)
+        self._model = model or os.getenv(EnvVar.OPENAI_TTS_MODEL, DEFAULT_OPENAI_TTS_MODEL)
+        self._voice = voice or os.getenv(EnvVar.OPENAI_TTS_VOICE, DEFAULT_OPENAI_TTS_VOICE)
         self._response_format = response_format or os.getenv(
-            "OPENAI_TTS_RESPONSE_FORMAT",
-            DEFAULT_OPENAI_TTS_RESPONSE_FORMAT,
+            EnvVar.OPENAI_TTS_RESPONSE_FORMAT,
+            DEFAULT_OPENAI_TTS_RESPONSE_FORMAT.value,
         )
         self._instructions = instructions or os.getenv(
-            "OPENAI_TTS_INSTRUCTIONS",
+            EnvVar.OPENAI_TTS_INSTRUCTIONS,
             DEFAULT_OPENAI_TTS_INSTRUCTIONS,
         )
 
@@ -132,14 +132,16 @@ class OpenAiTtsProvider:
 
 
 def _build_openai_client() -> OpenAiClient:
-    if not os.getenv("OPENAI_API_KEY"):
-        raise TtsConfigurationError("OPENAI_API_KEY is required when TTS_PROVIDER=openai.")
+    if not os.getenv(EnvVar.OPENAI_API_KEY):
+        raise TtsConfigurationError(
+            f"{EnvVar.OPENAI_API_KEY} is required when {EnvVar.TTS_PROVIDER}=openai."
+        )
 
     try:
         from openai import OpenAI
     except ImportError as exc:
         raise TtsConfigurationError(
-            "The openai package is required when TTS_PROVIDER=openai."
+            f"The openai package is required when {EnvVar.TTS_PROVIDER}=openai."
         ) from exc
 
     return OpenAI()
@@ -150,7 +152,7 @@ def _to_tts_error(exc: Exception) -> Exception:
 
     if status_code == 401:
         return TtsAuthenticationError(
-            "OpenAI TTS authentication failed. Check OPENAI_API_KEY in your .env file."
+            f"OpenAI TTS authentication failed. Check {EnvVar.OPENAI_API_KEY} in your .env file."
         )
     if status_code == 429:
         return TtsRateLimitError(

@@ -8,12 +8,13 @@ from audio_mcp_server.server import (
     get_audio_metadata_tool,
     save_audio_file_mcp_tool,
 )
+from podcraft_contracts import AiProvider, GeneratedAssetName, PayloadField
 
 
 def test_generate_audio_from_text_tool_returns_audio_result(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setenv("TTS_PROVIDER", "mock")
+    monkeypatch.setenv("TTS_PROVIDER", AiProvider.MOCK)
 
     result = generate_audio_from_text_tool(
         podcast_id="podcast-server-test",
@@ -42,7 +43,7 @@ def test_save_audio_file_tool_returns_audio_url() -> None:
 
 
 def test_get_audio_metadata_tool_returns_file_details(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("TTS_PROVIDER", "mock")
+    monkeypatch.setenv("TTS_PROVIDER", AiProvider.MOCK)
 
     generate_audio_from_text_tool(
         podcast_id="podcast-server-metadata",
@@ -51,11 +52,12 @@ def test_get_audio_metadata_tool_returns_file_details(monkeypatch: pytest.Monkey
         duration_seconds=120,
     )
 
-    result = get_audio_metadata_tool("generated/audio/podcast-server-metadata.wav")
+    metadata_audio = GeneratedAssetName.PODCAST_SERVER_METADATA_AUDIO
+    result = get_audio_metadata_tool(f"generated/audio/{metadata_audio}")
 
-    assert result["filename"] == "podcast-server-metadata.wav"
-    assert result["format"] == "wav"
-    assert result["size_bytes"] > 0
+    assert result[PayloadField.FILENAME] == metadata_audio
+    assert result[PayloadField.FORMAT] == "wav"
+    assert result[PayloadField.SIZE_BYTES] > 0
 
 
 def test_audio_tools_reject_invalid_base64() -> None:

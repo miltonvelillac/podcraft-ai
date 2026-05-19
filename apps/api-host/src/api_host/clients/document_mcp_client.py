@@ -9,6 +9,7 @@ from mcp.client.stdio import StdioServerParameters, stdio_client
 from mcp.types import CallToolResult
 
 from api_host.schemas.podcast_schemas import DocumentExtractionResult
+from podcraft_contracts import McpToolName, PayloadField
 
 
 class DocumentMcpClient:
@@ -38,24 +39,24 @@ class DocumentMcpClient:
     ) -> DocumentExtractionResult:
         content_base64 = base64.b64encode(content).decode("ascii")
         result = await self._call_tool(
-            name="extract_text_from_pdf",
+            name=McpToolName.EXTRACT_TEXT_FROM_PDF,
             arguments={
-                "filename": filename,
-                "content_base64": content_base64,
+                PayloadField.FILENAME: filename,
+                PayloadField.CONTENT_BASE64: content_base64,
             },
         )
         payload = _extract_structured_payload(result)
 
         return DocumentExtractionResult(
-            filename=str(payload["filename"]),
-            pages=int(payload["pages"]),
-            text=str(payload["text"]),
+            filename=str(payload[PayloadField.FILENAME]),
+            pages=int(payload[PayloadField.PAGES]),
+            text=str(payload[PayloadField.TEXT]),
         )
 
     async def clean_extracted_text(self, text: str) -> str:
         result = await self._call_tool(
-            name="clean_extracted_text",
-            arguments={"text": text},
+            name=McpToolName.CLEAN_EXTRACTED_TEXT,
+            arguments={PayloadField.TEXT: text},
         )
         return _extract_text_payload(result)
 

@@ -5,14 +5,15 @@ from api_host.agents.script_generation.errors import ScriptGenerationServiceErro
 from api_host.clients.errors import McpExternalServiceError
 from api_host.main import app
 from pdf_test_utils import build_pdf_with_text
+from podcraft_contracts import AiProvider
 
 
 client = TestClient(app)
 
 
 def test_generate_podcast_from_json_text(monkeypatch) -> None:
-    monkeypatch.setenv("SCRIPT_PROVIDER", "mock")
-    monkeypatch.setenv("TTS_PROVIDER", "mock")
+    monkeypatch.setenv("SCRIPT_PROVIDER", AiProvider.MOCK)
+    monkeypatch.setenv("TTS_PROVIDER", AiProvider.MOCK)
     response = client.post(
         "/api/podcasts/generate/text",
         json={
@@ -34,8 +35,8 @@ def test_generate_podcast_from_json_text(monkeypatch) -> None:
 
 
 def test_generate_podcast_from_multipart_pdf(monkeypatch) -> None:
-    monkeypatch.setenv("SCRIPT_PROVIDER", "mock")
-    monkeypatch.setenv("TTS_PROVIDER", "mock")
+    monkeypatch.setenv("SCRIPT_PROVIDER", AiProvider.MOCK)
+    monkeypatch.setenv("TTS_PROVIDER", AiProvider.MOCK)
     response = client.post(
         "/api/podcasts/generate/pdf",
         data={

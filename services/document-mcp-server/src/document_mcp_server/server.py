@@ -7,11 +7,12 @@ from document_mcp_server.tools.clean_text import clean_extracted_text as clean_t
 from document_mcp_server.tools.document_metadata import get_document_metadata as metadata_tool
 from document_mcp_server.tools.extract_pdf_text import extract_text_from_pdf as extract_pdf_text_tool
 from document_mcp_server.utils.payload_encoding import decode_base64_content
+from podcraft_contracts import McpToolName, PayloadField
 
 mcp = FastMCP("PodCraft Document MCP Server")
 
 
-@mcp.tool(name="extract_text_from_pdf")
+@mcp.tool(name=McpToolName.EXTRACT_TEXT_FROM_PDF)
 def extract_text_from_pdf_tool(filename: str, content_base64: str) -> dict[str, Any]:
     """Extract clean text from a base64-encoded PDF document."""
     content = _decode_base64_pdf(content_base64)
@@ -22,19 +23,19 @@ def extract_text_from_pdf_tool(filename: str, content_base64: str) -> dict[str, 
         raise ToolError(str(exc)) from exc
 
     return {
-        "filename": result.filename,
-        "pages": result.pages,
-        "text": result.text,
+        PayloadField.FILENAME: result.filename,
+        PayloadField.PAGES: result.pages,
+        PayloadField.TEXT: result.text,
     }
 
 
-@mcp.tool(name="clean_extracted_text")
+@mcp.tool(name=McpToolName.CLEAN_EXTRACTED_TEXT)
 def clean_extracted_text_tool(text: str) -> str:
     """Normalize whitespace in extracted document text."""
     return clean_text_tool(text)
 
 
-@mcp.tool(name="get_document_metadata")
+@mcp.tool(name=McpToolName.GET_DOCUMENT_METADATA)
 def get_document_metadata_tool(filename: str, content_base64: str) -> dict[str, Any]:
     """Return basic metadata for a base64-encoded PDF document."""
     content = _decode_base64_pdf(content_base64)
@@ -45,8 +46,8 @@ def get_document_metadata_tool(filename: str, content_base64: str) -> dict[str, 
         raise ToolError(str(exc)) from exc
 
     return {
-        "filename": result.filename,
-        "pages": result.pages,
+        PayloadField.FILENAME: result.filename,
+        PayloadField.PAGES: result.pages,
     }
 
 

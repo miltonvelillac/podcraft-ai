@@ -3,9 +3,10 @@ from pathlib import Path
 import wave
 
 from audio_mcp_server.tts.provider import SynthesisRequest, SynthesisResult
+from podcraft_contracts import AudioFormat
 
 
-MOCK_AUDIO_FORMAT = "wav"
+MOCK_AUDIO_FORMAT = AudioFormat.WAV
 SAMPLE_RATE = 8_000
 
 
@@ -14,12 +15,12 @@ class MockTtsProvider:
 
     def synthesize(self, request: SynthesisRequest) -> SynthesisResult:
         request.output_dir.mkdir(parents=True, exist_ok=True)
-        audio_path = request.output_dir / f"{request.podcast_id}.{MOCK_AUDIO_FORMAT}"
+        audio_path = request.output_dir / f"{request.podcast_id}.{MOCK_AUDIO_FORMAT.value}"
         self._write_mock_audio_file(audio_path=audio_path, request=request)
 
         return SynthesisResult(
             audio_path=audio_path,
-            format=MOCK_AUDIO_FORMAT,
+            format=MOCK_AUDIO_FORMAT.value,
             duration_seconds=request.duration_seconds,
         )
 

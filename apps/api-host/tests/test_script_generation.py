@@ -14,6 +14,7 @@ from api_host.schemas.podcast_schemas import (
     PodcastStyle,
     PodcastTargetDuration,
 )
+from podcraft_contracts import AiProvider
 
 
 def test_script_agent_uses_injected_generator() -> None:
@@ -101,7 +102,7 @@ def test_langchain_script_generator_wraps_provider_errors() -> None:
 
 
 def test_build_script_generator_selects_mock(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("SCRIPT_PROVIDER", "mock")
+    monkeypatch.setenv("SCRIPT_PROVIDER", AiProvider.MOCK)
 
     result = factory_module.build_script_generator()
 
@@ -110,7 +111,7 @@ def test_build_script_generator_selects_mock(monkeypatch: pytest.MonkeyPatch) ->
 
 def test_build_script_generator_selects_openai(monkeypatch: pytest.MonkeyPatch) -> None:
     provider = object()
-    monkeypatch.setenv("SCRIPT_PROVIDER", "openai")
+    monkeypatch.setenv("SCRIPT_PROVIDER", AiProvider.OPENAI)
     monkeypatch.setattr(factory_module, "LangChainScriptGenerator", lambda: provider)
 
     result = factory_module.build_script_generator()

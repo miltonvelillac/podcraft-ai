@@ -10,6 +10,7 @@ from mcp.types import CallToolResult
 
 from api_host.clients.errors import McpExternalServiceError, McpToolInputError
 from api_host.schemas.podcast_schemas import AudioGenerationResult
+from podcraft_contracts import McpToolName, PayloadField
 
 
 class AudioMcpClient:
@@ -39,21 +40,21 @@ class AudioMcpClient:
         duration_seconds: int,
     ) -> AudioGenerationResult:
         result = await self._call_tool(
-            name="generate_audio_from_text",
+            name=McpToolName.GENERATE_AUDIO_FROM_TEXT,
             arguments={
-                "podcast_id": podcast_id,
-                "script": script,
-                "voice": voice,
-                "language": language,
-                "duration_seconds": duration_seconds,
+                PayloadField.PODCAST_ID: podcast_id,
+                PayloadField.SCRIPT: script,
+                PayloadField.VOICE: voice,
+                PayloadField.LANGUAGE: language,
+                PayloadField.DURATION_SECONDS: duration_seconds,
             },
         )
         payload = _extract_structured_payload(result)
 
         return AudioGenerationResult(
-            audio_url=str(payload["audio_url"]),
-            format=str(payload["format"]),
-            duration_seconds=int(payload["duration_seconds"]),
+            audio_url=str(payload[PayloadField.AUDIO_URL]),
+            format=str(payload[PayloadField.FORMAT]),
+            duration_seconds=int(payload[PayloadField.DURATION_SECONDS]),
         )
 
     async def _call_tool(self, name: str, arguments: dict[str, Any]) -> CallToolResult:

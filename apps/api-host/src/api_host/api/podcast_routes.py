@@ -19,6 +19,7 @@ from api_host.schemas.podcast_schemas import (
     PodcastTargetDuration,
 )
 from api_host.services.podcast_pipeline import PodcastPipeline
+from podcraft_contracts import DEFAULT_AUDIO_VOICE
 
 router = APIRouter(prefix="/api/podcasts", tags=["podcasts"])
 ALLOWED_PDF_FORM_FIELDS = {field.value for field in PodcastFormField}
@@ -50,7 +51,7 @@ async def generate_podcast_from_pdf(
     request: Request,
     file: Annotated[UploadFile, File()],
     style: Annotated[PodcastStyle, Form()] = PodcastStyle.EDUCATIONAL,
-    voice: Annotated[str, Form()] = "default",
+    voice: Annotated[str, Form()] = DEFAULT_AUDIO_VOICE,
     language: Annotated[PodcastLanguage, Form()] = PodcastLanguage.ENGLISH,
     target_duration: Annotated[PodcastTargetDuration, Form()] = PodcastTargetDuration.SHORT,
 ) -> GeneratePodcastResponse:

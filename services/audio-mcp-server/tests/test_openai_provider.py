@@ -10,6 +10,7 @@ from audio_mcp_server.tts.errors import (
     TtsServiceError,
 )
 from audio_mcp_server.tts import OpenAiTtsProvider, SynthesisRequest
+from podcraft_contracts import AiProvider
 
 
 def test_openai_tts_provider_streams_audio_to_file(tmp_path: Path) -> None:
@@ -140,7 +141,7 @@ def test_build_tts_provider_selects_openai(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     provider = object()
-    monkeypatch.setenv("TTS_PROVIDER", "openai")
+    monkeypatch.setenv("TTS_PROVIDER", AiProvider.OPENAI)
     monkeypatch.setattr(factory_module, "OpenAiTtsProvider", lambda: provider)
 
     result = factory_module.build_tts_provider()

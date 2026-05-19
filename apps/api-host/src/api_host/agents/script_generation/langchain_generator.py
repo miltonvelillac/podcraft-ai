@@ -11,7 +11,7 @@ from api_host.schemas.podcast_schemas import (
     PodcastScript,
     PodcastStyle,
 )
-from podcraft_contracts import LANGUAGE_NAMES, PODCAST_DURATION_MINUTES
+from podcraft_contracts import EnvVar, LANGUAGE_NAMES, PODCAST_DURATION_MINUTES
 
 
 DEFAULT_SCRIPT_MODEL = "gpt-4.1-mini"
@@ -38,7 +38,7 @@ class LangChainScriptGenerator:
     ) -> None:
         self._structured_model = structured_model
         self._prompt = prompt
-        self._model = model or os.getenv("OPENAI_SCRIPT_MODEL", DEFAULT_SCRIPT_MODEL)
+        self._model = model or os.getenv(EnvVar.OPENAI_SCRIPT_MODEL, DEFAULT_SCRIPT_MODEL)
 
     def generate(self, request: ScriptGenerationRequest) -> PodcastScript:
         try:
@@ -69,9 +69,9 @@ class LangChainScriptGenerator:
         if self._structured_model is not None:
             return self._structured_model
 
-        if not os.getenv("OPENAI_API_KEY"):
+        if not os.getenv(EnvVar.OPENAI_API_KEY):
             raise ScriptGenerationConfigurationError(
-                "OPENAI_API_KEY is required when SCRIPT_PROVIDER=openai."
+                f"{EnvVar.OPENAI_API_KEY} is required when {EnvVar.SCRIPT_PROVIDER}=openai."
             )
 
         try:
@@ -79,7 +79,7 @@ class LangChainScriptGenerator:
             from langchain_openai import ChatOpenAI
         except ImportError as exc:
             raise ScriptGenerationConfigurationError(
-                "langchain-openai is required when SCRIPT_PROVIDER=openai."
+                f"langchain-openai is required when {EnvVar.SCRIPT_PROVIDER}=openai."
             ) from exc
 
         prompt = ChatPromptTemplate.from_messages(

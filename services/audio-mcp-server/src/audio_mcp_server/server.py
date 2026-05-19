@@ -10,17 +10,18 @@ from audio_mcp_server.tools.generate_audio import (
     generate_audio_from_text as generate_audio_tool,
 )
 from audio_mcp_server.tools.save_audio_file import save_audio_file as save_audio_file_tool
+from podcraft_contracts import DEFAULT_LANGUAGE, McpToolName, PayloadField
 
 mcp = FastMCP("PodCraft Audio MCP Server")
 
 
-@mcp.tool(name="generate_audio_from_text")
+@mcp.tool(name=McpToolName.GENERATE_AUDIO_FROM_TEXT)
 def generate_audio_from_text_tool(
     podcast_id: str,
     script: str,
     voice: str,
     duration_seconds: int,
-    language: str = "en",
+    language: str = DEFAULT_LANGUAGE,
 ) -> dict[str, Any]:
     """Generate a mocked audio file from podcast script text."""
     try:
@@ -35,13 +36,13 @@ def generate_audio_from_text_tool(
         raise ToolError(str(exc)) from exc
 
     return {
-        "audio_url": result.audio_url,
-        "format": result.format,
-        "duration_seconds": result.duration_seconds,
+        PayloadField.AUDIO_URL: result.audio_url,
+        PayloadField.FORMAT: result.format,
+        PayloadField.DURATION_SECONDS: result.duration_seconds,
     }
 
 
-@mcp.tool(name="save_audio_file")
+@mcp.tool(name=McpToolName.SAVE_AUDIO_FILE)
 def save_audio_file_mcp_tool(podcast_id: str, content_base64: str) -> dict[str, str]:
     """Save base64-encoded audio content to the generated audio directory."""
     try:
@@ -53,12 +54,12 @@ def save_audio_file_mcp_tool(podcast_id: str, content_base64: str) -> dict[str, 
         raise ToolError(str(exc)) from exc
 
     return {
-        "audio_url": audio_url,
-        "format": SUPPORTED_FORMAT,
+        PayloadField.AUDIO_URL: audio_url,
+        PayloadField.FORMAT: SUPPORTED_FORMAT,
     }
 
 
-@mcp.tool(name="get_audio_metadata")
+@mcp.tool(name=McpToolName.GET_AUDIO_METADATA)
 def get_audio_metadata_tool(audio_path: str) -> dict[str, Any]:
     """Return basic metadata for an audio file."""
     try:
@@ -67,9 +68,9 @@ def get_audio_metadata_tool(audio_path: str) -> dict[str, Any]:
         raise ToolError(str(exc)) from exc
 
     return {
-        "filename": result.filename,
-        "format": result.format,
-        "size_bytes": result.size_bytes,
+        PayloadField.FILENAME: result.filename,
+        PayloadField.FORMAT: result.format,
+        PayloadField.SIZE_BYTES: result.size_bytes,
     }
 
 

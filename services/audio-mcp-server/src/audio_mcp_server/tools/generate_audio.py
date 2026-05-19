@@ -4,10 +4,11 @@ import re
 
 from audio_mcp_server.tts import SynthesisRequest, TtsProvider, build_tts_provider
 from audio_mcp_server.tts.mock_provider import MOCK_AUDIO_FORMAT
+from podcraft_contracts import DEFAULT_LANGUAGE
 
 
 DEFAULT_AUDIO_DIR = Path("generated/audio")
-SUPPORTED_FORMAT = MOCK_AUDIO_FORMAT
+SUPPORTED_FORMAT = MOCK_AUDIO_FORMAT.value
 _SAFE_PODCAST_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]*$")
 
 
@@ -23,7 +24,7 @@ def generate_audio_from_text(
     script: str,
     voice: str,
     duration_seconds: int,
-    language: str = "en",
+    language: str = DEFAULT_LANGUAGE,
     output_dir: Path = DEFAULT_AUDIO_DIR,
     provider: TtsProvider | None = None,
 ) -> AudioGenerationResult:

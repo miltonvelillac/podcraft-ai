@@ -1,6 +1,7 @@
 from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+from podcraft_contracts import DEFAULT_AUDIO_VOICE, LanguageCode
 
 
 class PodcastInputType(StrEnum):
@@ -21,9 +22,9 @@ class PodcastTargetDuration(StrEnum):
 
 
 class PodcastLanguage(StrEnum):
-    ENGLISH = "en"
-    SPANISH = "es"
-    PORTUGUESE = "pt"
+    ENGLISH = LanguageCode.ENGLISH.value
+    SPANISH = LanguageCode.SPANISH.value
+    PORTUGUESE = LanguageCode.PORTUGUESE.value
 
 
 class PodcastFormField(StrEnum):
@@ -40,7 +41,7 @@ class GeneratePodcastRequest(BaseModel):
     input_type: PodcastInputType = PodcastInputType.TEXT
     text: str = Field(min_length=1)
     style: PodcastStyle = PodcastStyle.EDUCATIONAL
-    voice: str = Field(default="default", min_length=1)
+    voice: str = Field(default=DEFAULT_AUDIO_VOICE, min_length=1)
     language: PodcastLanguage = PodcastLanguage.ENGLISH
     target_duration: PodcastTargetDuration = PodcastTargetDuration.SHORT
 
@@ -57,7 +58,7 @@ class GeneratePodcastPdfFormRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     style: PodcastStyle = PodcastStyle.EDUCATIONAL
-    voice: str = Field(default="default", min_length=1)
+    voice: str = Field(default=DEFAULT_AUDIO_VOICE, min_length=1)
     language: PodcastLanguage = PodcastLanguage.ENGLISH
     target_duration: PodcastTargetDuration = PodcastTargetDuration.SHORT
 

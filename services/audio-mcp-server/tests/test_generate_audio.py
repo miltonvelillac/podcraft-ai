@@ -11,13 +11,14 @@ from audio_mcp_server.tts import (
 from audio_mcp_server.tools.audio_metadata import get_audio_metadata
 from audio_mcp_server.tools.generate_audio import generate_audio_from_text
 from audio_mcp_server.tools.save_audio_file import save_audio_file
+from podcraft_contracts import AiProvider
 
 
 def test_generate_audio_from_text_writes_mock_audio_file(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setenv("TTS_PROVIDER", "mock")
+    monkeypatch.setenv("TTS_PROVIDER", AiProvider.MOCK)
     result = generate_audio_from_text(
         podcast_id="podcast-test",
         script="Welcome to today's episode.",
@@ -90,7 +91,7 @@ def test_get_audio_metadata_returns_file_details(tmp_path: Path) -> None:
 
 
 def test_build_tts_provider_defaults_to_mock(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("TTS_PROVIDER", "mock")
+    monkeypatch.setenv("TTS_PROVIDER", AiProvider.MOCK)
 
     result = build_tts_provider()
 
