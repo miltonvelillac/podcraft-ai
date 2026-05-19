@@ -43,7 +43,7 @@ describe('PodcastGeneratorApiService', () => {
       podcast_id: 'podcast-test',
       title: 'Generated title',
       script: 'Generated script',
-      audio_url: '/generated/audio/podcast-test.mp3',
+      audio_url: '/generated/audio/podcast-test.wav',
       duration_seconds: 120,
     });
   });
@@ -63,7 +63,7 @@ describe('PodcastGeneratorApiService', () => {
       podcast_id: 'podcast-test',
       title: 'Generated title',
       script: 'Generated script',
-      audio_url: '/generated/audio/podcast-test.mp3',
+      audio_url: '/generated/audio/podcast-test.wav',
       duration_seconds: 240,
     });
   });

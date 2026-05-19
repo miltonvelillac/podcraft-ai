@@ -22,7 +22,7 @@ def test_generate_podcast_from_json_text() -> None:
     assert response.status_code == 200
     body = response.json()
     assert body["podcast_id"].startswith("podcast-")
-    assert body["audio_url"] == f"/generated/audio/{body['podcast_id']}.mp3"
+    assert body["audio_url"] == f"/generated/audio/{body['podcast_id']}.wav"
     assert body["duration_seconds"] == 120
 
 

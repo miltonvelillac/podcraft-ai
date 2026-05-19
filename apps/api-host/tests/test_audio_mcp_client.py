@@ -16,8 +16,8 @@ def test_audio_client_generates_mock_audio_metadata_over_mcp() -> None:
         120,
     )
 
-    assert result.audio_url == "/generated/audio/podcast-test.mp3"
-    assert result.format == "mp3"
+    assert result.audio_url == "/generated/audio/podcast-test.wav"
+    assert result.format == "wav"
     assert result.duration_seconds == 120
 
 

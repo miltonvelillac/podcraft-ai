@@ -16,12 +16,12 @@ def test_generate_audio_from_text_writes_mock_audio_file(tmp_path: Path) -> None
         output_dir=tmp_path,
     )
 
-    audio_path = tmp_path / "podcast-test.mp3"
-    assert result.audio_url == "/generated/audio/podcast-test.mp3"
-    assert result.format == "mp3"
+    audio_path = tmp_path / "podcast-test.wav"
+    assert result.audio_url == "/generated/audio/podcast-test.wav"
+    assert result.format == "wav"
     assert result.duration_seconds == 120
     assert audio_path.exists()
-    assert audio_path.read_bytes().startswith(b"ID3")
+    assert audio_path.read_bytes().startswith(b"RIFF")
 
 
 def test_generate_audio_from_text_rejects_empty_script(tmp_path: Path) -> None:
@@ -42,16 +42,16 @@ def test_save_audio_file_writes_base64_content(tmp_path: Path) -> None:
         output_dir=tmp_path,
     )
 
-    assert result == "/generated/audio/podcast-saved.mp3"
-    assert (tmp_path / "podcast-saved.mp3").read_bytes() == b"abc"
+    assert result == "/generated/audio/podcast-saved.wav"
+    assert (tmp_path / "podcast-saved.wav").read_bytes() == b"abc"
 
 
 def test_get_audio_metadata_returns_file_details(tmp_path: Path) -> None:
-    audio_path = tmp_path / "podcast-test.mp3"
+    audio_path = tmp_path / "podcast-test.wav"
     audio_path.write_bytes(b"abc")
 
     result = get_audio_metadata(str(audio_path))
 
-    assert result.filename == "podcast-test.mp3"
-    assert result.format == "mp3"
+    assert result.filename == "podcast-test.wav"
+    assert result.format == "wav"
     assert result.size_bytes == 3

@@ -17,8 +17,8 @@ def test_generate_audio_from_text_tool_returns_audio_result() -> None:
     )
 
     assert result == {
-        "audio_url": "/generated/audio/podcast-server-test.mp3",
-        "format": "mp3",
+        "audio_url": "/generated/audio/podcast-server-test.wav",
+        "format": "wav",
         "duration_seconds": 120,
     }
 
@@ -30,8 +30,8 @@ def test_save_audio_file_tool_returns_audio_url() -> None:
     )
 
     assert result == {
-        "audio_url": "/generated/audio/podcast-server-saved.mp3",
-        "format": "mp3",
+        "audio_url": "/generated/audio/podcast-server-saved.wav",
+        "format": "wav",
     }
 
 
@@ -43,10 +43,10 @@ def test_get_audio_metadata_tool_returns_file_details() -> None:
         duration_seconds=120,
     )
 
-    result = get_audio_metadata_tool("generated/audio/podcast-server-metadata.mp3")
+    result = get_audio_metadata_tool("generated/audio/podcast-server-metadata.wav")
 
-    assert result["filename"] == "podcast-server-metadata.mp3"
-    assert result["format"] == "mp3"
+    assert result["filename"] == "podcast-server-metadata.wav"
+    assert result["format"] == "wav"
     assert result["size_bytes"] > 0
 
 

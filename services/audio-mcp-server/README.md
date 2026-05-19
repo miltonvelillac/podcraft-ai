@@ -10,12 +10,12 @@ The server runs over MCP STDIO and exposes:
 - `save_audio_file`
 - `get_audio_metadata`
 
-`generate_audio_from_text` writes a deterministic mock `.mp3` file under `generated/audio/` and returns:
+`generate_audio_from_text` writes a deterministic mock `.wav` file under `generated/audio/` and returns:
 
 ```json
 {
-  "audio_url": "/generated/audio/podcast-test.mp3",
-  "format": "mp3",
+  "audio_url": "/generated/audio/podcast-test.wav",
+  "format": "wav",
   "duration_seconds": 120
 }
 ```

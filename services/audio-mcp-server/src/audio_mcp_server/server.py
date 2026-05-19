@@ -4,7 +4,10 @@ from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 
 from audio_mcp_server.tools.audio_metadata import get_audio_metadata as metadata_tool
-from audio_mcp_server.tools.generate_audio import generate_audio_from_text as generate_audio_tool
+from audio_mcp_server.tools.generate_audio import (
+    SUPPORTED_FORMAT,
+    generate_audio_from_text as generate_audio_tool,
+)
 from audio_mcp_server.tools.save_audio_file import save_audio_file as save_audio_file_tool
 
 mcp = FastMCP("PodCraft Audio MCP Server")
@@ -48,7 +51,7 @@ def save_audio_file_mcp_tool(podcast_id: str, content_base64: str) -> dict[str, 
 
     return {
         "audio_url": audio_url,
-        "format": "mp3",
+        "format": SUPPORTED_FORMAT,
     }
 
 

@@ -19,7 +19,7 @@ def test_pipeline_generates_mock_podcast_from_text() -> None:
     assert response.podcast_id.startswith("podcast-")
     assert response.title == "Fastapi Coordinates The Podcast Generation Workflow"
     assert "FastAPI coordinates" in response.script
-    assert response.audio_url == f"/generated/audio/{response.podcast_id}.mp3"
+    assert response.audio_url == f"/generated/audio/{response.podcast_id}.wav"
     assert response.duration_seconds == 120
 
 
@@ -39,7 +39,7 @@ def test_pipeline_generates_podcast_from_pdf() -> None:
     assert response.podcast_id.startswith("podcast-")
     assert response.title == "Pipeline Pdf Text"
     assert "Pipeline PDF text" in response.script
-    assert response.audio_url == f"/generated/audio/{response.podcast_id}.mp3"
+    assert response.audio_url == f"/generated/audio/{response.podcast_id}.wav"
     assert response.duration_seconds == 240
 
 
