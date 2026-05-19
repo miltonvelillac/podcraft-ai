@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import {
   GeneratePodcastResponse,
   GeneratePodcastTextRequest,
+  GenerationMode,
   PodcastLanguage,
   PodcastStyle,
   PodcastTargetDuration,
@@ -23,6 +24,7 @@ export class PodcastGeneratorApiService {
 
   generateFromPdf(
     file: File,
+    generationMode: GenerationMode,
     style: PodcastStyle,
     voice: string,
     language: PodcastLanguage,
@@ -30,6 +32,7 @@ export class PodcastGeneratorApiService {
   ): Observable<GeneratePodcastResponse> {
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('generation_mode', generationMode);
     formData.append('style', style);
     formData.append('voice', voice);
     formData.append('language', language);

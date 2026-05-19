@@ -16,6 +16,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
 import {
   GeneratePodcastResponse,
+  GenerationMode,
   Option,
   PodcastInputMode,
   PodcastLanguage,
@@ -67,9 +68,16 @@ export class PodcastGeneratorPageComponent {
     { value: 'es', label: 'Spanish' },
     { value: 'pt', label: 'Portuguese' },
   ];
+  protected readonly generationModes: Option<GenerationMode>[] = [
+    { value: 'podcast', label: 'Podcast' },
+    { value: 'read_aloud', label: 'Read aloud' },
+  ];
 
   protected readonly form = this.formBuilder.nonNullable.group({
     inputMode: this.formBuilder.nonNullable.control<PodcastInputMode>('text'),
+    generationMode: this.formBuilder.nonNullable.control<GenerationMode>('podcast', [
+      Validators.required,
+    ]),
     text: this.formBuilder.nonNullable.control('', [Validators.required, Validators.minLength(10)]),
     style: this.formBuilder.nonNullable.control<PodcastStyle>('educational', [Validators.required]),
     voice: this.formBuilder.nonNullable.control('default', [Validators.required]),
@@ -87,6 +95,10 @@ export class PodcastGeneratorPageComponent {
 
   protected get isPdfMode(): boolean {
     return this.form.controls.inputMode.value === 'pdf';
+  }
+
+  protected get isReadAloudMode(): boolean {
+    return this.form.controls.generationMode.value === 'read_aloud';
   }
 
   protected get selectedFileLabel(): string {
@@ -141,6 +153,7 @@ export class PodcastGeneratorPageComponent {
     const request$ = this.isPdfMode
       ? this.api.generateFromPdf(
           this.selectedFile() as File,
+          this.form.controls.generationMode.value,
           this.form.controls.style.value,
           this.form.controls.voice.value,
           this.form.controls.language.value,
@@ -148,6 +161,7 @@ export class PodcastGeneratorPageComponent {
         )
       : this.api.generateFromText({
           input_type: 'text',
+          generation_mode: this.form.controls.generationMode.value,
           text: this.form.controls.text.value,
           style: this.form.controls.style.value,
           voice: this.form.controls.voice.value,

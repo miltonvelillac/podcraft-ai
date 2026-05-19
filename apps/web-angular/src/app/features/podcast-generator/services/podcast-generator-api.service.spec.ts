@@ -27,6 +27,7 @@ describe('PodcastGeneratorApiService', () => {
     service
       .generateFromText({
         input_type: 'text',
+        generation_mode: 'podcast',
         text: 'FastAPI coordinates the podcast generation workflow.',
         style: 'educational',
         voice: 'default',
@@ -40,6 +41,7 @@ describe('PodcastGeneratorApiService', () => {
     const request = httpMock.expectOne('/api/podcasts/generate/text');
     expect(request.request.method).toBe('POST');
     expect(request.request.body.input_type).toBe('text');
+    expect(request.request.body.generation_mode).toBe('podcast');
     expect(request.request.body.language).toBe('es');
     request.flush({
       podcast_id: 'podcast-test',
@@ -53,12 +55,13 @@ describe('PodcastGeneratorApiService', () => {
   it('posts PDF generation requests as form data', () => {
     const file = new File(['pdf'], 'source.pdf', { type: 'application/pdf' });
 
-    service.generateFromPdf(file, 'conversational', 'default', 'pt', 'medium').subscribe();
+    service.generateFromPdf(file, 'podcast', 'conversational', 'default', 'pt', 'medium').subscribe();
 
     const request = httpMock.expectOne('/api/podcasts/generate/pdf');
     expect(request.request.method).toBe('POST');
     expect(request.request.body instanceof FormData).toBeTrue();
     expect(request.request.body.get('file')).toBe(file);
+    expect(request.request.body.get('generation_mode')).toBe('podcast');
     expect(request.request.body.get('style')).toBe('conversational');
     expect(request.request.body.get('language')).toBe('pt');
     expect(request.request.body.get('target_duration')).toBe('medium');

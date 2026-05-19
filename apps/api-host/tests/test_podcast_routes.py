@@ -18,6 +18,7 @@ def test_generate_podcast_from_json_text(monkeypatch) -> None:
         "/api/podcasts/generate/text",
         json={
             "input_type": "text",
+            "generation_mode": "podcast",
             "text": "FastAPI coordinates the podcast generation workflow.",
             "style": "educational",
             "voice": "default",
@@ -40,6 +41,7 @@ def test_generate_podcast_from_multipart_pdf(monkeypatch) -> None:
     response = client.post(
         "/api/podcasts/generate/pdf",
         data={
+            "generation_mode": "podcast",
             "style": "conversational",
             "voice": "default",
             "language": "pt",
@@ -60,6 +62,30 @@ def test_generate_podcast_from_multipart_pdf(monkeypatch) -> None:
     assert "Bem-vindo" in body["script"]
     assert "Podcast route PDF text" in body["script"]
     assert body["duration_seconds"] == 240
+
+
+def test_generate_read_aloud_from_json_text(monkeypatch) -> None:
+    monkeypatch.setenv("SCRIPT_PROVIDER", "unsupported")
+    monkeypatch.setenv("TTS_PROVIDER", AiProvider.MOCK)
+    response = client.post(
+        "/api/podcasts/generate/text",
+        json={
+            "input_type": "text",
+            "generation_mode": "read_aloud",
+            "text": "Read this source text directly without creating a podcast script.",
+            "style": "educational",
+            "voice": "default",
+            "language": "en",
+            "target_duration": "long",
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["podcast_id"].startswith("audio-")
+    assert body["title"] == "Narrated Audio"
+    assert body["script"] == "Read this source text directly without creating a podcast script."
+    assert body["duration_seconds"] == 30
 
 
 def test_generate_podcast_rejects_missing_pdf_file() -> None:

@@ -19,7 +19,7 @@ from api_host.schemas.podcast_schemas import (
     PodcastTargetDuration,
 )
 from api_host.services.podcast_pipeline import PodcastPipeline
-from podcraft_contracts import DEFAULT_AUDIO_VOICE
+from podcraft_contracts import DEFAULT_AUDIO_VOICE, GenerationMode
 
 router = APIRouter(prefix="/api/podcasts", tags=["podcasts"])
 ALLOWED_PDF_FORM_FIELDS = {field.value for field in PodcastFormField}
@@ -50,6 +50,7 @@ async def generate_podcast_from_text(request: GeneratePodcastRequest) -> Generat
 async def generate_podcast_from_pdf(
     request: Request,
     file: Annotated[UploadFile, File()],
+    generation_mode: Annotated[GenerationMode, Form()] = GenerationMode.PODCAST,
     style: Annotated[PodcastStyle, Form()] = PodcastStyle.EDUCATIONAL,
     voice: Annotated[str, Form()] = DEFAULT_AUDIO_VOICE,
     language: Annotated[PodcastLanguage, Form()] = PodcastLanguage.ENGLISH,
@@ -62,6 +63,7 @@ async def generate_podcast_from_pdf(
         field_group_name="form field",
     )
     form = GeneratePodcastPdfFormRequest(
+        generation_mode=generation_mode,
         style=style,
         voice=voice,
         language=language,
@@ -74,6 +76,7 @@ async def generate_podcast_from_pdf(
         return await pipeline.generate_from_pdf(
             filename=file.filename or "upload.pdf",
             content=content,
+            generation_mode=form.generation_mode,
             style=form.style,
             voice=form.voice,
             language=form.language,

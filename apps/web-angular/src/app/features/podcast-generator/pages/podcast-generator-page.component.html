@@ -31,6 +31,15 @@
               </mat-button-toggle>
             </mat-button-toggle-group>
 
+            <mat-button-toggle-group aria-label="Generation mode" formControlName="generationMode">
+              @for (mode of generationModes; track mode.value) {
+                <mat-button-toggle [value]="mode.value">
+                  <mat-icon>{{ mode.value === 'podcast' ? 'podcasts' : 'record_voice_over' }}</mat-icon>
+                  {{ mode.label }}
+                </mat-button-toggle>
+              }
+            </mat-button-toggle-group>
+
             @if (!isPdfMode) {
               <mat-form-field appearance="outline">
                 <mat-label>Source text</mat-label>
@@ -67,14 +76,16 @@
             }
 
             <div class="settings-grid">
-              <mat-form-field appearance="outline">
-                <mat-label>Style</mat-label>
-                <mat-select formControlName="style">
-                  @for (style of styles; track style.value) {
-                    <mat-option [value]="style.value">{{ style.label }}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
+              @if (!isReadAloudMode) {
+                <mat-form-field appearance="outline">
+                  <mat-label>Style</mat-label>
+                  <mat-select formControlName="style">
+                    @for (style of styles; track style.value) {
+                      <mat-option [value]="style.value">{{ style.label }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              }
 
               <mat-form-field appearance="outline">
                 <mat-label>Voice</mat-label>
@@ -94,14 +105,16 @@
                 </mat-select>
               </mat-form-field>
 
-              <mat-form-field appearance="outline">
-                <mat-label>Duration</mat-label>
-                <mat-select formControlName="targetDuration">
-                  @for (duration of durations; track duration.value) {
-                    <mat-option [value]="duration.value">{{ duration.label }}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
+              @if (!isReadAloudMode) {
+                <mat-form-field appearance="outline">
+                  <mat-label>Duration</mat-label>
+                  <mat-select formControlName="targetDuration">
+                    @for (duration of durations; track duration.value) {
+                      <mat-option [value]="duration.value">{{ duration.label }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              }
             </div>
 
             @if (errorMessage()) {
@@ -132,7 +145,7 @@
           @if (result(); as podcast) {
             <div class="result-header">
               <div>
-                <p class="eyebrow">Generated podcast</p>
+                <p class="eyebrow">Generated audio</p>
                 <h2>{{ podcast.title }}</h2>
               </div>
               <span>{{ podcast.duration_seconds }}s</span>
@@ -141,7 +154,7 @@
             <mat-divider />
 
             <section class="script-preview" aria-label="Script preview">
-              <h3>Script Preview</h3>
+              <h3>{{ isReadAloudMode ? 'Narration Text' : 'Script Preview' }}</h3>
               <p>{{ podcast.script }}</p>
             </section>
 
@@ -156,7 +169,7 @@
             <div class="empty-state">
               <mat-icon>graphic_eq</mat-icon>
               <h2>Ready for generation</h2>
-              <p>The script preview and playable audio file will appear here.</p>
+              <p>The text preview and playable audio file will appear here.</p>
             </div>
           }
         </mat-card-content>

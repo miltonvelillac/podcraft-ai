@@ -31,6 +31,11 @@ class GeneratedAssetName(StrEnum):
     PODCAST_SERVER_METADATA_AUDIO = "podcast-server-metadata.wav"
 
 
+class GenerationMode(StrEnum):
+    PODCAST = "podcast"
+    READ_ALOUD = "read_aloud"
+
+
 class McpToolName(StrEnum):
     EXTRACT_TEXT_FROM_PDF = "extract_text_from_pdf"
     CLEAN_EXTRACTED_TEXT = "clean_extracted_text"

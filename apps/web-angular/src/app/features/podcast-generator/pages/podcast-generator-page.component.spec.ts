@@ -55,9 +55,32 @@ describe('PodcastGeneratorPageComponent', () => {
 
     expect(api.generateFromText).toHaveBeenCalledWith(
       jasmine.objectContaining({
+        generation_mode: 'podcast',
         language: 'es',
       }),
     );
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Generated script');
+  });
+
+  it('sends read aloud generation mode', () => {
+    api.generateFromText.and.returnValue(
+      of({
+        podcast_id: 'audio-test',
+        title: 'Narrated Audio',
+        script: 'Narrated text',
+        audio_url: '/generated/audio/audio-test.wav',
+        duration_seconds: 30,
+      }),
+    );
+
+    fixture.componentInstance['form'].controls.text.setValue('Read this text aloud directly.');
+    fixture.componentInstance['form'].controls.generationMode.setValue('read_aloud');
+    fixture.componentInstance['generatePodcast']();
+
+    expect(api.generateFromText).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        generation_mode: 'read_aloud',
+      }),
+    );
   });
 });
