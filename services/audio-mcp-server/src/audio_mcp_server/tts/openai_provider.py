@@ -36,6 +36,11 @@ OPENAI_VOICES = {
     "shimmer",
     "verse",
 }
+LANGUAGE_NAMES = {
+    "en": "English",
+    "es": "Spanish",
+    "pt": "Portuguese",
+}
 
 
 class StreamingSpeechResponse(Protocol):
@@ -100,7 +105,7 @@ class OpenAiTtsProvider:
                 model=self._model,
                 voice=self._resolve_voice(request.voice),
                 input=request.script,
-                instructions=self._instructions,
+                instructions=self._build_instructions(request.language),
                 response_format=self._response_format,
             ) as response:
                 response.stream_to_file(audio_path)
@@ -125,6 +130,14 @@ class OpenAiTtsProvider:
             return normalized
 
         raise TtsConfigurationError(f"Unsupported OpenAI TTS voice: {requested_voice}.")
+
+    def _build_instructions(self, language: str) -> str:
+        normalized = language.strip().lower()
+        language_name = LANGUAGE_NAMES.get(normalized)
+        if language_name is None:
+            raise TtsConfigurationError(f"Unsupported TTS language: {language}.")
+
+        return f"{self._instructions} Speak in {language_name}."
 
 
 def _build_openai_client() -> OpenAiClient:

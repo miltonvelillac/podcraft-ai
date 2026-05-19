@@ -18,6 +18,7 @@ def test_generate_podcast_from_json_text(monkeypatch) -> None:
             "text": "FastAPI coordinates the podcast generation workflow.",
             "style": "educational",
             "voice": "default",
+            "language": "es",
             "target_duration": "short",
         },
     )
@@ -25,6 +26,7 @@ def test_generate_podcast_from_json_text(monkeypatch) -> None:
     assert response.status_code == 200
     body = response.json()
     assert body["podcast_id"].startswith("podcast-")
+    assert "Bienvenido" in body["script"]
     assert body["audio_url"] == f"/generated/audio/{body['podcast_id']}.wav"
     assert body["duration_seconds"] == 120
 
@@ -36,6 +38,7 @@ def test_generate_podcast_from_multipart_pdf(monkeypatch) -> None:
         data={
             "style": "conversational",
             "voice": "default",
+            "language": "pt",
             "target_duration": "medium",
         },
         files={
@@ -50,6 +53,7 @@ def test_generate_podcast_from_multipart_pdf(monkeypatch) -> None:
     assert response.status_code == 200
     body = response.json()
     assert body["podcast_id"].startswith("podcast-")
+    assert "Bem-vindo" in body["script"]
     assert "Podcast route PDF text" in body["script"]
     assert body["duration_seconds"] == 240
 
@@ -60,6 +64,7 @@ def test_generate_podcast_rejects_missing_pdf_file() -> None:
         data={
             "style": "educational",
             "voice": "default",
+            "language": "en",
             "target_duration": "short",
         },
     )

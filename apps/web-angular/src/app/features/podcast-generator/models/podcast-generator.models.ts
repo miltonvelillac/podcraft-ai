@@ -1,12 +1,14 @@
 export type PodcastInputMode = 'text' | 'pdf';
 export type PodcastStyle = 'educational' | 'conversational' | 'executive_summary';
 export type PodcastTargetDuration = 'short' | 'medium' | 'long';
+export type PodcastLanguage = 'en' | 'es' | 'pt';
 
 export interface GeneratePodcastTextRequest {
   input_type: 'text';
   text: string;
   style: PodcastStyle;
   voice: string;
+  language: PodcastLanguage;
   target_duration: PodcastTargetDuration;
 }
 

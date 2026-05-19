@@ -20,10 +20,17 @@ class PodcastTargetDuration(StrEnum):
     LONG = "long"
 
 
+class PodcastLanguage(StrEnum):
+    ENGLISH = "en"
+    SPANISH = "es"
+    PORTUGUESE = "pt"
+
+
 class PodcastFormField(StrEnum):
     FILE = "file"
     STYLE = "style"
     VOICE = "voice"
+    LANGUAGE = "language"
     TARGET_DURATION = "target_duration"
 
 
@@ -34,6 +41,7 @@ class GeneratePodcastRequest(BaseModel):
     text: str = Field(min_length=1)
     style: PodcastStyle = PodcastStyle.EDUCATIONAL
     voice: str = Field(default="default", min_length=1)
+    language: PodcastLanguage = PodcastLanguage.ENGLISH
     target_duration: PodcastTargetDuration = PodcastTargetDuration.SHORT
 
     @field_validator("text")
@@ -50,6 +58,7 @@ class GeneratePodcastPdfFormRequest(BaseModel):
 
     style: PodcastStyle = PodcastStyle.EDUCATIONAL
     voice: str = Field(default="default", min_length=1)
+    language: PodcastLanguage = PodcastLanguage.ENGLISH
     target_duration: PodcastTargetDuration = PodcastTargetDuration.SHORT
 
     @field_validator("voice")

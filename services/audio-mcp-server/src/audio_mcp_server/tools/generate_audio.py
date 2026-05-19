@@ -23,6 +23,7 @@ def generate_audio_from_text(
     script: str,
     voice: str,
     duration_seconds: int,
+    language: str = "en",
     output_dir: Path = DEFAULT_AUDIO_DIR,
     provider: TtsProvider | None = None,
 ) -> AudioGenerationResult:
@@ -30,6 +31,7 @@ def generate_audio_from_text(
         podcast_id=podcast_id,
         script=script,
         voice=voice,
+        language=language,
         duration_seconds=duration_seconds,
     )
 
@@ -39,6 +41,7 @@ def generate_audio_from_text(
             podcast_id=podcast_id,
             script=script,
             voice=voice,
+            language=language,
             duration_seconds=duration_seconds,
             output_dir=output_dir,
         )
@@ -55,6 +58,7 @@ def _validate_audio_request(
     podcast_id: str,
     script: str,
     voice: str,
+    language: str,
     duration_seconds: int,
 ) -> None:
     if not _SAFE_PODCAST_ID.fullmatch(podcast_id):
@@ -63,5 +67,7 @@ def _validate_audio_request(
         raise ValueError("Script cannot be empty.")
     if not voice.strip():
         raise ValueError("Voice cannot be empty.")
+    if not language.strip():
+        raise ValueError("Language cannot be empty.")
     if duration_seconds <= 0:
         raise ValueError("Duration must be greater than zero.")

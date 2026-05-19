@@ -35,6 +35,7 @@ class AudioMcpClient:
         podcast_id: str,
         script: str,
         voice: str,
+        language: str,
         duration_seconds: int,
     ) -> AudioGenerationResult:
         result = await self._call_tool(
@@ -43,6 +44,7 @@ class AudioMcpClient:
                 "podcast_id": podcast_id,
                 "script": script,
                 "voice": voice,
+                "language": language,
                 "duration_seconds": duration_seconds,
             },
         )

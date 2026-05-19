@@ -80,6 +80,7 @@ Example JSON body for text input:
   "text": "FastAPI coordinates the podcast generation workflow.",
   "style": "educational",
   "voice": "default",
+  "language": "en",
   "target_duration": "short"
 }
 ```
@@ -91,6 +92,7 @@ curl -X POST http://localhost:8000/api/podcasts/generate/pdf \
   -F "file=@example.pdf" \
   -F "style=educational" \
   -F "voice=default" \
+  -F "language=en" \
   -F "target_duration=short"
 ```
 

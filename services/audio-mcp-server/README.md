@@ -47,6 +47,12 @@ OPENAI_TTS_INSTRUCTIONS=Speak clearly in a warm podcast narration style.
 
 Use `TTS_PROVIDER=openai` to generate real speech through OpenAI. Keep `TTS_PROVIDER=mock` for local development without API calls.
 
+The API Host passes the selected language to the Audio MCP Server. OpenAI TTS receives it as part of the speech instructions. Supported language values are:
+
+- `en` for English
+- `es` for Spanish
+- `pt` for Portuguese
+
 Run the server directly:
 
 ```bash

@@ -1,6 +1,11 @@
 import anyio
 
-from api_host.schemas.podcast_schemas import GeneratePodcastRequest, PodcastStyle, PodcastTargetDuration
+from api_host.schemas.podcast_schemas import (
+    GeneratePodcastRequest,
+    PodcastLanguage,
+    PodcastStyle,
+    PodcastTargetDuration,
+)
 from api_host.services.podcast_pipeline import PodcastPipeline
 from pdf_test_utils import build_pdf_with_text
 
@@ -35,6 +40,7 @@ def test_pipeline_generates_podcast_from_pdf(monkeypatch) -> None:
         build_pdf_with_text("Pipeline PDF text"),
         PodcastStyle.CONVERSATIONAL,
         "default",
+        PodcastLanguage.ENGLISH,
         PodcastTargetDuration.MEDIUM,
     )
 
@@ -51,6 +57,7 @@ async def _generate_from_pdf(
     content: bytes,
     style: PodcastStyle,
     voice: str,
+    language: PodcastLanguage,
     target_duration: PodcastTargetDuration,
 ):
     return await pipeline.generate_from_pdf(
@@ -58,6 +65,7 @@ async def _generate_from_pdf(
         content=content,
         style=style,
         voice=voice,
+        language=language,
         target_duration=target_duration,
     )
 

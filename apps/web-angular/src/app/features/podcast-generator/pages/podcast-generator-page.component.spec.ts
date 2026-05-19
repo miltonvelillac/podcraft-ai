@@ -49,10 +49,15 @@ describe('PodcastGeneratorPageComponent', () => {
     fixture.componentInstance['form'].controls.text.setValue(
       'FastAPI coordinates the podcast generation workflow.',
     );
+    fixture.componentInstance['form'].controls.language.setValue('es');
     fixture.componentInstance['generatePodcast']();
     fixture.detectChanges();
 
-    expect(api.generateFromText).toHaveBeenCalled();
+    expect(api.generateFromText).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        language: 'es',
+      }),
+    );
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Generated script');
   });
 });

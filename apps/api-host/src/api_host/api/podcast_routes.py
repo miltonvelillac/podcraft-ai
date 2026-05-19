@@ -10,6 +10,7 @@ from api_host.schemas.podcast_schemas import (
     GeneratePodcastResponse,
     PodcastFormField,
     PodcastInputType,
+    PodcastLanguage,
     PodcastStyle,
     PodcastTargetDuration,
 )
@@ -42,6 +43,7 @@ async def generate_podcast_from_pdf(
     file: Annotated[UploadFile, File()],
     style: Annotated[PodcastStyle, Form()] = PodcastStyle.EDUCATIONAL,
     voice: Annotated[str, Form()] = "default",
+    language: Annotated[PodcastLanguage, Form()] = PodcastLanguage.ENGLISH,
     target_duration: Annotated[PodcastTargetDuration, Form()] = PodcastTargetDuration.SHORT,
 ) -> GeneratePodcastResponse:
     form_data = await request.form()
@@ -53,6 +55,7 @@ async def generate_podcast_from_pdf(
     form = GeneratePodcastPdfFormRequest(
         style=style,
         voice=voice,
+        language=language,
         target_duration=target_duration,
     )
 
@@ -64,6 +67,7 @@ async def generate_podcast_from_pdf(
             content=content,
             style=form.style,
             voice=form.voice,
+            language=form.language,
             target_duration=form.target_duration,
         )
     except (ValueError, McpToolInputError) as exc:

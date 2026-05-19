@@ -27,6 +27,7 @@ def test_openai_tts_provider_streams_audio_to_file(tmp_path: Path) -> None:
             podcast_id="podcast-openai",
             script="Welcome to the generated episode.",
             voice="default",
+            language="en",
             duration_seconds=120,
             output_dir=tmp_path,
         )
@@ -41,7 +42,7 @@ def test_openai_tts_provider_streams_audio_to_file(tmp_path: Path) -> None:
         "model": "gpt-4o-mini-tts",
         "voice": "coral",
         "input": "Welcome to the generated episode.",
-        "instructions": "Speak clearly.",
+        "instructions": "Speak clearly. Speak in English.",
         "response_format": "wav",
     }
 
@@ -55,6 +56,7 @@ def test_openai_tts_provider_uses_requested_voice(tmp_path: Path) -> None:
             podcast_id="podcast-voice",
             script="Voice override test.",
             voice="nova",
+            language="en",
             duration_seconds=60,
             output_dir=tmp_path,
         )
@@ -73,6 +75,7 @@ def test_openai_tts_provider_maps_frontend_voice_alias(tmp_path: Path) -> None:
             podcast_id="podcast-alias",
             script="Voice alias test.",
             voice="briefing",
+            language="en",
             duration_seconds=60,
             output_dir=tmp_path,
         )
@@ -91,6 +94,42 @@ def test_openai_tts_provider_rejects_unsupported_voice(tmp_path: Path) -> None:
                 podcast_id="podcast-bad-voice",
                 script="Bad voice test.",
                 voice="robot",
+                language="en",
+                duration_seconds=60,
+                output_dir=tmp_path,
+            )
+        )
+
+
+def test_openai_tts_provider_adds_selected_language_to_instructions(tmp_path: Path) -> None:
+    client = FakeOpenAiClient()
+    provider = OpenAiTtsProvider(client=client, instructions="Narrate naturally.")
+
+    provider.synthesize(
+        SynthesisRequest(
+            podcast_id="podcast-spanish",
+            script="Contenido del episodio.",
+            voice="default",
+            language="es",
+            duration_seconds=60,
+            output_dir=tmp_path,
+        )
+    )
+
+    assert client.create_kwargs is not None
+    assert client.create_kwargs["instructions"] == "Narrate naturally. Speak in Spanish."
+
+
+def test_openai_tts_provider_rejects_unsupported_language(tmp_path: Path) -> None:
+    provider = OpenAiTtsProvider(client=FakeOpenAiClient())
+
+    with pytest.raises(TtsConfigurationError, match="Unsupported TTS language"):
+        provider.synthesize(
+            SynthesisRequest(
+                podcast_id="podcast-language",
+                script="Language test.",
+                voice="default",
+                language="fr",
                 duration_seconds=60,
                 output_dir=tmp_path,
             )
@@ -139,6 +178,7 @@ def test_openai_tts_provider_translates_openai_errors(
                 podcast_id="podcast-error",
                 script="Error test.",
                 voice="default",
+                language="en",
                 duration_seconds=60,
                 output_dir=tmp_path,
             )

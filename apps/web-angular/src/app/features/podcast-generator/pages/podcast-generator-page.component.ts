@@ -18,6 +18,7 @@ import {
   GeneratePodcastResponse,
   Option,
   PodcastInputMode,
+  PodcastLanguage,
   PodcastStyle,
   PodcastTargetDuration,
 } from '../models/podcast-generator.models';
@@ -61,12 +62,18 @@ export class PodcastGeneratorPageComponent {
     { value: 'medium', label: 'Medium' },
     { value: 'long', label: 'Long' },
   ];
+  protected readonly languages: Option<PodcastLanguage>[] = [
+    { value: 'en', label: 'English' },
+    { value: 'es', label: 'Spanish' },
+    { value: 'pt', label: 'Portuguese' },
+  ];
 
   protected readonly form = this.formBuilder.nonNullable.group({
     inputMode: this.formBuilder.nonNullable.control<PodcastInputMode>('text'),
     text: this.formBuilder.nonNullable.control('', [Validators.required, Validators.minLength(10)]),
     style: this.formBuilder.nonNullable.control<PodcastStyle>('educational', [Validators.required]),
     voice: this.formBuilder.nonNullable.control('default', [Validators.required]),
+    language: this.formBuilder.nonNullable.control<PodcastLanguage>('en', [Validators.required]),
     targetDuration: this.formBuilder.nonNullable.control<PodcastTargetDuration>('short', [
       Validators.required,
     ]),
@@ -136,6 +143,7 @@ export class PodcastGeneratorPageComponent {
           this.selectedFile() as File,
           this.form.controls.style.value,
           this.form.controls.voice.value,
+          this.form.controls.language.value,
           this.form.controls.targetDuration.value,
         )
       : this.api.generateFromText({
@@ -143,6 +151,7 @@ export class PodcastGeneratorPageComponent {
           text: this.form.controls.text.value,
           style: this.form.controls.style.value,
           voice: this.form.controls.voice.value,
+          language: this.form.controls.language.value,
           target_duration: this.form.controls.targetDuration.value,
         });
 

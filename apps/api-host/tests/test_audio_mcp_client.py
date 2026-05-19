@@ -15,6 +15,7 @@ def test_audio_client_generates_mock_audio_metadata_over_mcp(monkeypatch) -> Non
         "podcast-test",
         "Welcome to today's episode.",
         "default",
+        "en",
         120,
     )
 
@@ -34,6 +35,7 @@ def test_audio_client_rejects_empty_script(monkeypatch) -> None:
             "podcast-empty",
             "   ",
             "default",
+            "en",
             120,
         )
 
@@ -43,11 +45,13 @@ async def _generate_audio_from_text(
     podcast_id: str,
     script: str,
     voice: str,
+    language: str,
     duration_seconds: int,
 ):
     return await client.generate_audio_from_text(
         podcast_id=podcast_id,
         script=script,
         voice=voice,
+        language=language,
         duration_seconds=duration_seconds,
     )

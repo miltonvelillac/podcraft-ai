@@ -6,6 +6,7 @@ from api_host.clients.document_mcp_client import DocumentMcpClient
 from api_host.schemas.podcast_schemas import (
     GeneratePodcastRequest,
     GeneratePodcastResponse,
+    PodcastLanguage,
     PodcastStyle,
     PodcastTargetDuration,
 )
@@ -27,6 +28,7 @@ class PodcastPipeline:
             text=request.text,
             style=request.style,
             voice=request.voice,
+            language=request.language,
             target_duration=request.target_duration,
         )
 
@@ -36,6 +38,7 @@ class PodcastPipeline:
         content: bytes,
         style: PodcastStyle,
         voice: str,
+        language: PodcastLanguage,
         target_duration: PodcastTargetDuration,
     ) -> GeneratePodcastResponse:
         document = await self._document_client.extract_text_from_pdf(
@@ -46,6 +49,7 @@ class PodcastPipeline:
             text=document.text,
             style=style,
             voice=voice,
+            language=language,
             target_duration=target_duration,
         )
 
@@ -54,12 +58,14 @@ class PodcastPipeline:
         text: str,
         style: PodcastStyle,
         voice: str,
+        language: PodcastLanguage,
         target_duration: PodcastTargetDuration,
     ) -> GeneratePodcastResponse:
         script = self._script_agent.generate_script(
             text=text,
             style=style,
             target_duration=target_duration,
+            language=language,
         )
         podcast_id = f"podcast-{uuid4().hex[:8]}"
         duration_seconds = script.estimated_duration_minutes * 60
@@ -67,6 +73,7 @@ class PodcastPipeline:
             podcast_id=podcast_id,
             script=script.script,
             voice=voice,
+            language=language.value,
             duration_seconds=duration_seconds,
         )
 

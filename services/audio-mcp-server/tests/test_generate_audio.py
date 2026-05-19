@@ -41,6 +41,7 @@ def test_generate_audio_from_text_uses_injected_tts_provider(tmp_path: Path) -> 
         podcast_id="podcast-provider",
         script="Provider generated audio.",
         voice="default",
+        language="es",
         duration_seconds=30,
         output_dir=tmp_path,
         provider=provider,
@@ -49,6 +50,7 @@ def test_generate_audio_from_text_uses_injected_tts_provider(tmp_path: Path) -> 
     assert provider.request is not None
     assert provider.request.podcast_id == "podcast-provider"
     assert provider.request.script == "Provider generated audio."
+    assert provider.request.language == "es"
     assert result.audio_url == "/generated/audio/podcast-provider.fake"
     assert result.format == "fake"
     assert result.duration_seconds == 7

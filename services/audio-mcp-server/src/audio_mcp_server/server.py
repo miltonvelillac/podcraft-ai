@@ -20,6 +20,7 @@ def generate_audio_from_text_tool(
     script: str,
     voice: str,
     duration_seconds: int,
+    language: str = "en",
 ) -> dict[str, Any]:
     """Generate a mocked audio file from podcast script text."""
     try:
@@ -27,6 +28,7 @@ def generate_audio_from_text_tool(
             podcast_id=podcast_id,
             script=script,
             voice=voice,
+            language=language,
             duration_seconds=duration_seconds,
         )
     except (ValueError, TtsProviderError) as exc:

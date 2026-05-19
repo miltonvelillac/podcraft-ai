@@ -8,6 +8,7 @@ class SynthesisRequest:
     podcast_id: str
     script: str
     voice: str
+    language: str
     duration_seconds: int
     output_dir: Path
 
