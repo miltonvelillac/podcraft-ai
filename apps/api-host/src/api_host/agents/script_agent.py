@@ -1,4 +1,5 @@
 from api_host.agents.script_generation import (
+    ScriptGenerationGraph,
     ScriptGenerationRequest,
     ScriptGenerator,
     build_script_generator,
@@ -10,7 +11,7 @@ class ScriptAgent:
     """Internal script-generation agent used by the MCP host."""
 
     def __init__(self, generator: ScriptGenerator | None = None) -> None:
-        self._generator = generator or build_script_generator()
+        self._generator = ScriptGenerationGraph(generator or build_script_generator())
 
     def generate_script(
         self,

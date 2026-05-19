@@ -2,7 +2,11 @@ import pytest
 
 import api_host.agents.script_generation.factory as factory_module
 from api_host.agents.script_agent import ScriptAgent
-from api_host.agents.script_generation import LangChainScriptGenerator, MockScriptGenerator
+from api_host.agents.script_generation import (
+    LangChainScriptGenerator,
+    MockScriptGenerator,
+    ScriptGenerationGraph,
+)
 from api_host.agents.script_generation.errors import (
     ScriptGenerationConfigurationError,
     ScriptGenerationServiceError,
@@ -71,6 +75,41 @@ def test_langchain_script_generator_uses_structured_model() -> None:
     assert structured_model.input is not None
     assert structured_model.input["language"] == "English"
     assert structured_model.input["target_minutes"] == 4
+
+
+def test_script_generation_graph_normalizes_and_truncates_source_text() -> None:
+    generator = FakeScriptGenerator()
+    graph = ScriptGenerationGraph(generator=generator, max_source_chars=28)
+
+    result = graph.generate(
+        ScriptGenerationRequest(
+            text="  First   sentence with extra spacing that should be truncated.  ",
+            style=PodcastStyle.EDUCATIONAL,
+            target_duration=PodcastTargetDuration.SHORT,
+            language=PodcastLanguage.ENGLISH,
+        )
+    )
+
+    assert generator.request is not None
+    assert generator.request.text == "First sentence with extra"
+    assert result.title == "Injected title"
+
+
+def test_script_generation_graph_retries_invalid_script() -> None:
+    generator = RetryScriptGenerator()
+    graph = ScriptGenerationGraph(generator=generator)
+
+    result = graph.generate(
+        ScriptGenerationRequest(
+            text="Source text",
+            style=PodcastStyle.EDUCATIONAL,
+            target_duration=PodcastTargetDuration.SHORT,
+            language=PodcastLanguage.ENGLISH,
+        )
+    )
+
+    assert generator.calls == 2
+    assert result.script == "Recovered script"
 
 
 def test_langchain_script_generator_requires_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -154,3 +193,18 @@ class FakeStructuredScriptModel:
 class FailingStructuredScriptModel:
     def invoke(self, input: dict[str, object]) -> PodcastScript:
         raise RuntimeError("provider failed")
+
+
+class RetryScriptGenerator:
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def generate(self, request: ScriptGenerationRequest) -> PodcastScript:
+        self.calls += 1
+        if self.calls == 1:
+            return PodcastScript(title="", script="", estimated_duration_minutes=0)
+        return PodcastScript(
+            title="Recovered title",
+            script="Recovered script",
+            estimated_duration_minutes=2,
+        )
