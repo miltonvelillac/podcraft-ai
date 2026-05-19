@@ -2,9 +2,9 @@
   "name": "podcraft-ai",
   "private": true,
   "scripts": {
-    "web:start": "pnpm --dir apps/web-angular start",
-    "web:build": "pnpm --dir apps/web-angular build",
-    "web:test": "pnpm --dir apps/web-angular test"
+    "web:start": "corepack pnpm --config.verify-deps-before-run=false --dir apps/web-angular start",
+    "web:build": "corepack pnpm --config.verify-deps-before-run=false --dir apps/web-angular build",
+    "web:test": "corepack pnpm --config.verify-deps-before-run=false --dir apps/web-angular test"
   },
-  "packageManager": "pnpm@latest"
+  "packageManager": "pnpm@11.1.3"
 }

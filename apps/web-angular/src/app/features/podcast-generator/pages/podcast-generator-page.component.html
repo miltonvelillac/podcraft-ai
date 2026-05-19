@@ -1,0 +1,157 @@
+<main class="page-shell">
+  <section class="workspace" aria-labelledby="page-title">
+    <header class="workspace__header">
+      <div>
+        <p class="eyebrow">PodCraft AI</p>
+        <h1 id="page-title">Podcast Generator</h1>
+      </div>
+      <span class="status-pill">MCP Host</span>
+    </header>
+
+    <div class="workspace__grid">
+      <mat-card class="generator-card" appearance="outlined">
+        <mat-card-header>
+          <mat-card-title>Source</mat-card-title>
+        </mat-card-header>
+
+        <mat-card-content>
+          <form class="generator-form" [formGroup]="form" (ngSubmit)="generatePodcast()">
+            <mat-button-toggle-group
+              aria-label="Input mode"
+              formControlName="inputMode"
+              (change)="onModeChange($event.value)"
+            >
+              <mat-button-toggle value="text">
+                <mat-icon>notes</mat-icon>
+                Text
+              </mat-button-toggle>
+              <mat-button-toggle value="pdf">
+                <mat-icon>picture_as_pdf</mat-icon>
+                PDF
+              </mat-button-toggle>
+            </mat-button-toggle-group>
+
+            @if (!isPdfMode) {
+              <mat-form-field appearance="outline">
+                <mat-label>Source text</mat-label>
+                <textarea
+                  matInput
+                  formControlName="text"
+                  rows="11"
+                  placeholder="Paste an article, briefing, or notes to convert into a podcast."
+                ></textarea>
+                @if (form.controls.text.hasError('required')) {
+                  <mat-error>Text is required.</mat-error>
+                }
+                @if (form.controls.text.hasError('minlength')) {
+                  <mat-error>Use at least 10 characters.</mat-error>
+                }
+              </mat-form-field>
+            } @else {
+              <div class="file-drop">
+                <mat-icon>upload_file</mat-icon>
+                <div>
+                  <strong>{{ selectedFileLabel }}</strong>
+                  <span>PDF input is extracted through the Document MCP Server.</span>
+                </div>
+                <button mat-stroked-button type="button" (click)="pdfInput.click()">
+                  Browse
+                </button>
+                <input
+                  #pdfInput
+                  type="file"
+                  accept="application/pdf"
+                  (change)="onFileSelected($event)"
+                />
+              </div>
+            }
+
+            <div class="settings-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Style</mat-label>
+                <mat-select formControlName="style">
+                  @for (style of styles; track style.value) {
+                    <mat-option [value]="style.value">{{ style.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Voice</mat-label>
+                <mat-select formControlName="voice">
+                  @for (voice of voices; track voice.value) {
+                    <mat-option [value]="voice.value">{{ voice.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Duration</mat-label>
+                <mat-select formControlName="targetDuration">
+                  @for (duration of durations; track duration.value) {
+                    <mat-option [value]="duration.value">{{ duration.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            @if (errorMessage()) {
+              <div class="message message--error">
+                <mat-icon>error</mat-icon>
+                <span>{{ errorMessage() }}</span>
+              </div>
+            }
+
+            <button mat-flat-button type="submit" [disabled]="isLoading()">
+              @if (isLoading()) {
+                <mat-spinner diameter="20" />
+              } @else {
+                <mat-icon>auto_awesome</mat-icon>
+              }
+              Generate
+            </button>
+          </form>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="result-card" appearance="outlined">
+        <mat-card-header>
+          <mat-card-title>Output</mat-card-title>
+        </mat-card-header>
+
+        <mat-card-content>
+          @if (result(); as podcast) {
+            <div class="result-header">
+              <div>
+                <p class="eyebrow">Generated podcast</p>
+                <h2>{{ podcast.title }}</h2>
+              </div>
+              <span>{{ podcast.duration_seconds }}s</span>
+            </div>
+
+            <mat-divider />
+
+            <section class="script-preview" aria-label="Script preview">
+              <h3>Script Preview</h3>
+              <p>{{ podcast.script }}</p>
+            </section>
+
+            <section class="audio-panel" aria-label="Audio player">
+              <audio controls [src]="audioSource()"></audio>
+              <a mat-stroked-button [href]="podcast.audio_url" download>
+                <mat-icon>download</mat-icon>
+                Download
+              </a>
+            </section>
+          } @else {
+            <div class="empty-state">
+              <mat-icon>graphic_eq</mat-icon>
+              <h2>Ready for generation</h2>
+              <p>The script preview and playable audio file will appear here.</p>
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </section>
+</main>
