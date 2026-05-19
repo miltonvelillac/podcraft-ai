@@ -47,6 +47,22 @@ Install Python dependencies:
 uv sync
 ```
 
+Copy environment variables:
+
+```bash
+cp .env.example .env
+```
+
+The default `.env.example` keeps AI providers in mock mode. To use OpenAI-backed script generation through LangChain and real OpenAI TTS, configure:
+
+```env
+OPENAI_API_KEY=sk-proj-...
+SCRIPT_PROVIDER=openai
+OPENAI_SCRIPT_MODEL=gpt-4.1-mini
+TTS_PROVIDER=openai
+OPENAI_TTS_MODEL=gpt-4o-mini-tts
+```
+
 Start the FastAPI host:
 
 ```bash
@@ -142,7 +158,7 @@ Current command meanings:
 
 ## Current Status
 
-This repository currently contains the base monorepo configuration, a FastAPI host, a `/health` endpoint, podcast generation endpoints for text and PDF input, real local PDF text extraction through the Document MCP Server, and mocked audio generation through the Audio MCP Server.
+This repository currently contains the base monorepo configuration, a FastAPI host, a `/health` endpoint, podcast generation endpoints for text and PDF input, real local PDF text extraction through the Document MCP Server, optional LangChain/OpenAI script generation inside the API Host, and mock or OpenAI-backed audio generation through the Audio MCP Server.
 
 ## MCP Integration Status
 
@@ -165,3 +181,13 @@ Document tools / Audio tools
 STDIO is the intended MCP transport for the MVP because it keeps local orchestration simple. After the MVP is working end to end, Streamable HTTP should be considered for running the Document and Audio MCP Servers as independent services, especially under Docker Compose.
 
 The Script Agent remains internal to the API Host for the MVP. It must not be converted into an MCP server in the first version.
+
+Script generation is provider-based:
+
+```txt
+ScriptAgent
+  |-- MockScriptGenerator
+  `-- LangChainScriptGenerator
+```
+
+Use `SCRIPT_PROVIDER=mock` for deterministic local development and tests. Use `SCRIPT_PROVIDER=openai` to generate podcast scripts with LangChain and OpenAI structured output.

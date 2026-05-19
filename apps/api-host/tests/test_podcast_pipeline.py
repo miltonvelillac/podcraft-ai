@@ -11,6 +11,7 @@ from pdf_test_utils import build_pdf_with_text
 
 
 def test_pipeline_generates_mock_podcast_from_text(monkeypatch) -> None:
+    monkeypatch.setenv("SCRIPT_PROVIDER", "mock")
     monkeypatch.setenv("TTS_PROVIDER", "mock")
     pipeline = PodcastPipeline()
     request = GeneratePodcastRequest(
@@ -30,6 +31,7 @@ def test_pipeline_generates_mock_podcast_from_text(monkeypatch) -> None:
 
 
 def test_pipeline_generates_podcast_from_pdf(monkeypatch) -> None:
+    monkeypatch.setenv("SCRIPT_PROVIDER", "mock")
     monkeypatch.setenv("TTS_PROVIDER", "mock")
     pipeline = PodcastPipeline()
 

@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
 import api_host.api.podcast_routes as podcast_routes_module
+from api_host.agents.script_generation.errors import ScriptGenerationServiceError
 from api_host.clients.errors import McpExternalServiceError
 from api_host.main import app
 from pdf_test_utils import build_pdf_with_text
@@ -10,6 +11,7 @@ client = TestClient(app)
 
 
 def test_generate_podcast_from_json_text(monkeypatch) -> None:
+    monkeypatch.setenv("SCRIPT_PROVIDER", "mock")
     monkeypatch.setenv("TTS_PROVIDER", "mock")
     response = client.post(
         "/api/podcasts/generate/text",
@@ -32,6 +34,7 @@ def test_generate_podcast_from_json_text(monkeypatch) -> None:
 
 
 def test_generate_podcast_from_multipart_pdf(monkeypatch) -> None:
+    monkeypatch.setenv("SCRIPT_PROVIDER", "mock")
     monkeypatch.setenv("TTS_PROVIDER", "mock")
     response = client.post(
         "/api/podcasts/generate/pdf",
@@ -140,3 +143,26 @@ def test_generate_text_endpoint_returns_bad_gateway_for_tts_failure(monkeypatch)
 
     assert response.status_code == 502
     assert response.json()["detail"] == "OpenAI TTS authentication failed."
+
+
+def test_generate_text_endpoint_returns_bad_gateway_for_script_failure(monkeypatch) -> None:
+    class FailingPipeline:
+        async def generate_from_text(self, _request):
+            raise ScriptGenerationServiceError("OpenAI script generation failed.")
+
+    monkeypatch.setattr(podcast_routes_module, "PodcastPipeline", FailingPipeline)
+
+    response = client.post(
+        "/api/podcasts/generate/text",
+        json={
+            "input_type": "text",
+            "text": "FastAPI coordinates the podcast generation workflow.",
+            "style": "educational",
+            "voice": "default",
+            "language": "en",
+            "target_duration": "short",
+        },
+    )
+
+    assert response.status_code == 502
+    assert response.json()["detail"] == "OpenAI script generation failed."

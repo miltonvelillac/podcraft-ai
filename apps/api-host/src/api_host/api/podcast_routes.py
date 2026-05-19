@@ -3,6 +3,10 @@ from typing import Annotated
 from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile, status
 
 from api_host.api.request_validation import reject_unknown_fields
+from api_host.agents.script_generation.errors import (
+    ScriptGenerationConfigurationError,
+    ScriptGenerationServiceError,
+)
 from api_host.clients.errors import McpExternalServiceError, McpToolInputError
 from api_host.schemas.podcast_schemas import (
     GeneratePodcastPdfFormRequest,
@@ -31,6 +35,10 @@ async def generate_podcast_from_text(request: GeneratePodcastRequest) -> Generat
     pipeline = PodcastPipeline()
     try:
         return await pipeline.generate_from_text(request)
+    except ScriptGenerationConfigurationError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    except ScriptGenerationServiceError as exc:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc
     except McpToolInputError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
     except McpExternalServiceError as exc:
@@ -70,7 +78,7 @@ async def generate_podcast_from_pdf(
             language=form.language,
             target_duration=form.target_duration,
         )
-    except (ValueError, McpToolInputError) as exc:
+    except (ValueError, McpToolInputError, ScriptGenerationConfigurationError) as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
-    except McpExternalServiceError as exc:
+    except (McpExternalServiceError, ScriptGenerationServiceError) as exc:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc
