@@ -8,7 +8,11 @@ from audio_mcp_server.server import (
 )
 
 
-def test_generate_audio_from_text_tool_returns_audio_result() -> None:
+def test_generate_audio_from_text_tool_returns_audio_result(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("TTS_PROVIDER", "mock")
+
     result = generate_audio_from_text_tool(
         podcast_id="podcast-server-test",
         script="Welcome to today's episode.",
@@ -35,7 +39,9 @@ def test_save_audio_file_tool_returns_audio_url() -> None:
     }
 
 
-def test_get_audio_metadata_tool_returns_file_details() -> None:
+def test_get_audio_metadata_tool_returns_file_details(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("TTS_PROVIDER", "mock")
+
     generate_audio_from_text_tool(
         podcast_id="podcast-server-metadata",
         script="Welcome to today's episode.",

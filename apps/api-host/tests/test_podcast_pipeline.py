@@ -5,7 +5,8 @@ from api_host.services.podcast_pipeline import PodcastPipeline
 from pdf_test_utils import build_pdf_with_text
 
 
-def test_pipeline_generates_mock_podcast_from_text() -> None:
+def test_pipeline_generates_mock_podcast_from_text(monkeypatch) -> None:
+    monkeypatch.setenv("TTS_PROVIDER", "mock")
     pipeline = PodcastPipeline()
     request = GeneratePodcastRequest(
         text="FastAPI coordinates the podcast generation workflow.",
@@ -23,7 +24,8 @@ def test_pipeline_generates_mock_podcast_from_text() -> None:
     assert response.duration_seconds == 120
 
 
-def test_pipeline_generates_podcast_from_pdf() -> None:
+def test_pipeline_generates_podcast_from_pdf(monkeypatch) -> None:
+    monkeypatch.setenv("TTS_PROVIDER", "mock")
     pipeline = PodcastPipeline()
 
     response = anyio.run(

@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -57,7 +58,10 @@ class AudioMcpClient:
             command=sys.executable,
             args=[str(self._audio_server_script)],
             cwd=str(self._project_root),
-            env={"PYTHONPATH": str(self._audio_server_src)},
+            env={
+                **os.environ,
+                "PYTHONPATH": str(self._audio_server_src),
+            },
         )
 
         async with stdio_client(server_params) as (read_stream, write_stream):

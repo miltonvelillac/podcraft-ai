@@ -4,7 +4,8 @@ import pytest
 from api_host.clients.audio_mcp_client import AudioMcpClient
 
 
-def test_audio_client_generates_mock_audio_metadata_over_mcp() -> None:
+def test_audio_client_generates_mock_audio_metadata_over_mcp(monkeypatch) -> None:
+    monkeypatch.setenv("TTS_PROVIDER", "mock")
     client = AudioMcpClient()
 
     result = anyio.run(
@@ -21,7 +22,8 @@ def test_audio_client_generates_mock_audio_metadata_over_mcp() -> None:
     assert result.duration_seconds == 120
 
 
-def test_audio_client_rejects_empty_script() -> None:
+def test_audio_client_rejects_empty_script(monkeypatch) -> None:
+    monkeypatch.setenv("TTS_PROVIDER", "mock")
     client = AudioMcpClient()
 
     with pytest.raises(ValueError, match="Script cannot be empty"):

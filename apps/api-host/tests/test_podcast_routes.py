@@ -7,7 +7,8 @@ from pdf_test_utils import build_pdf_with_text
 client = TestClient(app)
 
 
-def test_generate_podcast_from_json_text() -> None:
+def test_generate_podcast_from_json_text(monkeypatch) -> None:
+    monkeypatch.setenv("TTS_PROVIDER", "mock")
     response = client.post(
         "/api/podcasts/generate/text",
         json={
@@ -26,7 +27,8 @@ def test_generate_podcast_from_json_text() -> None:
     assert body["duration_seconds"] == 120
 
 
-def test_generate_podcast_from_multipart_pdf() -> None:
+def test_generate_podcast_from_multipart_pdf(monkeypatch) -> None:
+    monkeypatch.setenv("TTS_PROVIDER", "mock")
     response = client.post(
         "/api/podcasts/generate/pdf",
         data={

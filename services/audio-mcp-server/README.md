@@ -30,16 +30,22 @@ Audio synthesis is isolated behind `TtsProvider`:
 Audio MCP tool
   |
 TtsProvider
-  `-- MockTtsProvider
+  |-- MockTtsProvider
+  `-- OpenAiTtsProvider
 ```
 
 Provider selection is controlled by:
 
 ```env
 TTS_PROVIDER=mock
+OPENAI_API_KEY=
+OPENAI_TTS_MODEL=gpt-4o-mini-tts
+OPENAI_TTS_VOICE=coral
+OPENAI_TTS_RESPONSE_FORMAT=wav
+OPENAI_TTS_INSTRUCTIONS=Speak clearly in a warm podcast narration style.
 ```
 
-Only `mock` is implemented right now. The next provider should be added without changing the API Host or frontend contracts.
+Use `TTS_PROVIDER=openai` to generate real speech through OpenAI. Keep `TTS_PROVIDER=mock` for local development without API calls.
 
 Run the server directly:
 
