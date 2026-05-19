@@ -1,6 +1,7 @@
 import anyio
 import pytest
 
+from api_host.clients.errors import McpToolInputError
 from api_host.clients.audio_mcp_client import AudioMcpClient
 
 
@@ -26,7 +27,7 @@ def test_audio_client_rejects_empty_script(monkeypatch) -> None:
     monkeypatch.setenv("TTS_PROVIDER", "mock")
     client = AudioMcpClient()
 
-    with pytest.raises(ValueError, match="Script cannot be empty"):
+    with pytest.raises(McpToolInputError, match="Script cannot be empty"):
         anyio.run(
             _generate_audio_from_text,
             client,

@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile, status
 
 from api_host.api.request_validation import reject_unknown_fields
+from api_host.clients.errors import McpExternalServiceError, McpToolInputError
 from api_host.schemas.podcast_schemas import (
     GeneratePodcastPdfFormRequest,
     GeneratePodcastRequest,
@@ -24,10 +25,15 @@ async def generate_podcast_from_text(request: GeneratePodcastRequest) -> Generat
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Use /api/podcasts/generate/pdf for PDF input.",
-        )
+    )
 
     pipeline = PodcastPipeline()
-    return await pipeline.generate_from_text(request)
+    try:
+        return await pipeline.generate_from_text(request)
+    except McpToolInputError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    except McpExternalServiceError as exc:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc
 
 
 @router.post("/generate/pdf", response_model=GeneratePodcastResponse)
@@ -60,5 +66,7 @@ async def generate_podcast_from_pdf(
             voice=form.voice,
             target_duration=form.target_duration,
         )
-    except ValueError as exc:
+    except (ValueError, McpToolInputError) as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    except McpExternalServiceError as exc:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc

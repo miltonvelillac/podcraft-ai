@@ -8,6 +8,7 @@ from mcp.client.session import ClientSession
 from mcp.client.stdio import StdioServerParameters, stdio_client
 from mcp.types import CallToolResult
 
+from api_host.clients.errors import McpExternalServiceError, McpToolInputError
 from api_host.schemas.podcast_schemas import AudioGenerationResult
 
 
@@ -70,7 +71,10 @@ class AudioMcpClient:
                 result = await session.call_tool(name, arguments)
 
         if result.isError:
-            raise ValueError(_extract_text_payload(result))
+            message = _extract_text_payload(result)
+            if _is_external_service_error(message):
+                raise McpExternalServiceError(message)
+            raise McpToolInputError(message)
 
         return result
 
@@ -106,3 +110,13 @@ def _find_project_root(start: Path) -> Path:
             return path
 
     raise RuntimeError("Could not locate project root.")
+
+
+def _is_external_service_error(message: str) -> bool:
+    external_markers = (
+        "OpenAI TTS authentication failed",
+        "OpenAI TTS rate limit exceeded",
+        "OpenAI TTS is temporarily unavailable",
+        "OpenAI TTS failed",
+    )
+    return any(marker in message for marker in external_markers)

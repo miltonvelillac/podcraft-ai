@@ -1,6 +1,8 @@
 import pytest
 from mcp.server.fastmcp.exceptions import ToolError
 
+import audio_mcp_server.server as server_module
+from audio_mcp_server.tts.errors import TtsAuthenticationError
 from audio_mcp_server.server import (
     generate_audio_from_text_tool,
     get_audio_metadata_tool,
@@ -61,4 +63,19 @@ def test_audio_tools_reject_invalid_base64() -> None:
         save_audio_file_mcp_tool(
             podcast_id="podcast-invalid",
             content_base64="not base64",
+        )
+
+
+def test_generate_audio_tool_returns_clean_tts_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    def raise_tts_error(**_kwargs):
+        raise TtsAuthenticationError("OpenAI TTS authentication failed.")
+
+    monkeypatch.setattr(server_module, "generate_audio_tool", raise_tts_error)
+
+    with pytest.raises(ToolError, match="OpenAI TTS authentication failed"):
+        generate_audio_from_text_tool(
+            podcast_id="podcast-error",
+            script="Welcome to today's episode.",
+            voice="default",
+            duration_seconds=120,
         )

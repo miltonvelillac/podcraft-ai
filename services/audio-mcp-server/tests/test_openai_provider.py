@@ -3,6 +3,12 @@ from pathlib import Path
 import pytest
 
 import audio_mcp_server.tts.factory as factory_module
+from audio_mcp_server.tts.errors import (
+    TtsAuthenticationError,
+    TtsConfigurationError,
+    TtsRateLimitError,
+    TtsServiceError,
+)
 from audio_mcp_server.tts import OpenAiTtsProvider, SynthesisRequest
 
 
@@ -79,7 +85,7 @@ def test_openai_tts_provider_maps_frontend_voice_alias(tmp_path: Path) -> None:
 def test_openai_tts_provider_rejects_unsupported_voice(tmp_path: Path) -> None:
     provider = OpenAiTtsProvider(client=FakeOpenAiClient())
 
-    with pytest.raises(ValueError, match="Unsupported OpenAI TTS voice"):
+    with pytest.raises(TtsConfigurationError, match="Unsupported OpenAI TTS voice"):
         provider.synthesize(
             SynthesisRequest(
                 podcast_id="podcast-bad-voice",
@@ -106,32 +112,64 @@ def test_build_tts_provider_selects_openai(
 def test_openai_tts_provider_requires_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
 
-    with pytest.raises(ValueError, match="OPENAI_API_KEY is required"):
+    with pytest.raises(TtsConfigurationError, match="OPENAI_API_KEY is required"):
         OpenAiTtsProvider()
 
 
+@pytest.mark.parametrize(
+    ("status_code", "expected_error", "expected_message"),
+    [
+        (401, TtsAuthenticationError, "OpenAI TTS authentication failed"),
+        (429, TtsRateLimitError, "OpenAI TTS rate limit exceeded"),
+        (500, TtsServiceError, "OpenAI TTS is temporarily unavailable"),
+        (400, TtsConfigurationError, "OpenAI TTS rejected the request"),
+    ],
+)
+def test_openai_tts_provider_translates_openai_errors(
+    tmp_path: Path,
+    status_code: int,
+    expected_error: type[Exception],
+    expected_message: str,
+) -> None:
+    provider = OpenAiTtsProvider(client=FakeOpenAiClient(error=FakeOpenAiError(status_code)))
+
+    with pytest.raises(expected_error, match=expected_message):
+        provider.synthesize(
+            SynthesisRequest(
+                podcast_id="podcast-error",
+                script="Error test.",
+                voice="default",
+                duration_seconds=60,
+                output_dir=tmp_path,
+            )
+        )
+
+
 class FakeOpenAiClient:
-    def __init__(self) -> None:
+    def __init__(self, error: Exception | None = None) -> None:
         self.create_kwargs: dict[str, str] | None = None
-        self.audio = FakeAudioClient(self)
+        self.audio = FakeAudioClient(self, error=error)
 
 
 class FakeAudioClient:
-    def __init__(self, client: FakeOpenAiClient) -> None:
-        self.speech = FakeSpeechClient(client)
+    def __init__(self, client: FakeOpenAiClient, error: Exception | None = None) -> None:
+        self.speech = FakeSpeechClient(client, error=error)
 
 
 class FakeSpeechClient:
-    def __init__(self, client: FakeOpenAiClient) -> None:
-        self.with_streaming_response = FakeStreamingSpeechClient(client)
+    def __init__(self, client: FakeOpenAiClient, error: Exception | None = None) -> None:
+        self.with_streaming_response = FakeStreamingSpeechClient(client, error=error)
 
 
 class FakeStreamingSpeechClient:
-    def __init__(self, client: FakeOpenAiClient) -> None:
+    def __init__(self, client: FakeOpenAiClient, error: Exception | None = None) -> None:
         self._client = client
+        self._error = error
 
     def create(self, **kwargs: str) -> "FakeStreamingSpeechResponse":
         self._client.create_kwargs = kwargs
+        if self._error is not None:
+            raise self._error
         return FakeStreamingSpeechResponse()
 
 
@@ -144,3 +182,9 @@ class FakeStreamingSpeechResponse:
 
     def stream_to_file(self, file: str | Path) -> None:
         Path(file).write_bytes(b"openai audio")
+
+
+class FakeOpenAiError(Exception):
+    def __init__(self, status_code: int) -> None:
+        super().__init__("OpenAI error")
+        self.status_code = status_code

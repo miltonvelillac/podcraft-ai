@@ -3,6 +3,7 @@ from typing import Any
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 
+from audio_mcp_server.tts.errors import TtsProviderError
 from audio_mcp_server.tools.audio_metadata import get_audio_metadata as metadata_tool
 from audio_mcp_server.tools.generate_audio import (
     SUPPORTED_FORMAT,
@@ -28,7 +29,7 @@ def generate_audio_from_text_tool(
             voice=voice,
             duration_seconds=duration_seconds,
         )
-    except ValueError as exc:
+    except (ValueError, TtsProviderError) as exc:
         raise ToolError(str(exc)) from exc
 
     return {

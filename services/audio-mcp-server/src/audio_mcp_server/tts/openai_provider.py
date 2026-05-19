@@ -2,6 +2,13 @@ import os
 from pathlib import Path
 from typing import Protocol
 
+from audio_mcp_server.tts.errors import (
+    TtsAuthenticationError,
+    TtsConfigurationError,
+    TtsProviderError,
+    TtsRateLimitError,
+    TtsServiceError,
+)
 from audio_mcp_server.tts.provider import SynthesisRequest, SynthesisResult
 
 
@@ -88,14 +95,19 @@ class OpenAiTtsProvider:
         request.output_dir.mkdir(parents=True, exist_ok=True)
         audio_path = request.output_dir / f"{request.podcast_id}.{self._response_format}"
 
-        with self._client.audio.speech.with_streaming_response.create(
-            model=self._model,
-            voice=self._resolve_voice(request.voice),
-            input=request.script,
-            instructions=self._instructions,
-            response_format=self._response_format,
-        ) as response:
-            response.stream_to_file(audio_path)
+        try:
+            with self._client.audio.speech.with_streaming_response.create(
+                model=self._model,
+                voice=self._resolve_voice(request.voice),
+                input=request.script,
+                instructions=self._instructions,
+                response_format=self._response_format,
+            ) as response:
+                response.stream_to_file(audio_path)
+        except TtsProviderError:
+            raise
+        except Exception as exc:
+            raise _to_tts_error(exc) from exc
 
         return SynthesisResult(
             audio_path=audio_path,
@@ -112,16 +124,39 @@ class OpenAiTtsProvider:
         if normalized in OPENAI_VOICES:
             return normalized
 
-        raise ValueError(f"Unsupported OpenAI TTS voice: {requested_voice}.")
+        raise TtsConfigurationError(f"Unsupported OpenAI TTS voice: {requested_voice}.")
 
 
 def _build_openai_client() -> OpenAiClient:
     if not os.getenv("OPENAI_API_KEY"):
-        raise ValueError("OPENAI_API_KEY is required when TTS_PROVIDER=openai.")
+        raise TtsConfigurationError("OPENAI_API_KEY is required when TTS_PROVIDER=openai.")
 
     try:
         from openai import OpenAI
     except ImportError as exc:
-        raise RuntimeError("The openai package is required when TTS_PROVIDER=openai.") from exc
+        raise TtsConfigurationError(
+            "The openai package is required when TTS_PROVIDER=openai."
+        ) from exc
 
     return OpenAI()
+
+
+def _to_tts_error(exc: Exception) -> Exception:
+    status_code = getattr(exc, "status_code", None)
+
+    if status_code == 401:
+        return TtsAuthenticationError(
+            "OpenAI TTS authentication failed. Check OPENAI_API_KEY in your .env file."
+        )
+    if status_code == 429:
+        return TtsRateLimitError(
+            "OpenAI TTS rate limit exceeded. Wait a moment and try again."
+        )
+    if isinstance(status_code, int) and status_code >= 500:
+        return TtsServiceError("OpenAI TTS is temporarily unavailable. Try again later.")
+    if isinstance(status_code, int) and 400 <= status_code < 500:
+        return TtsConfigurationError(
+            "OpenAI TTS rejected the request. Check model, voice, and audio settings."
+        )
+
+    return TtsServiceError("OpenAI TTS failed while generating audio.")

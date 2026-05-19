@@ -1,5 +1,7 @@
 from fastapi.testclient import TestClient
 
+import api_host.api.podcast_routes as podcast_routes_module
+from api_host.clients.errors import McpExternalServiceError
 from api_host.main import app
 from pdf_test_utils import build_pdf_with_text
 
@@ -111,3 +113,25 @@ def test_generate_text_endpoint_rejects_pdf_input_type() -> None:
 
     assert response.status_code == 400
     assert response.json()["detail"] == "Use /api/podcasts/generate/pdf for PDF input."
+
+
+def test_generate_text_endpoint_returns_bad_gateway_for_tts_failure(monkeypatch) -> None:
+    class FailingPipeline:
+        async def generate_from_text(self, _request):
+            raise McpExternalServiceError("OpenAI TTS authentication failed.")
+
+    monkeypatch.setattr(podcast_routes_module, "PodcastPipeline", FailingPipeline)
+
+    response = client.post(
+        "/api/podcasts/generate/text",
+        json={
+            "input_type": "text",
+            "text": "FastAPI coordinates the podcast generation workflow.",
+            "style": "educational",
+            "voice": "default",
+            "target_duration": "short",
+        },
+    )
+
+    assert response.status_code == 502
+    assert response.json()["detail"] == "OpenAI TTS authentication failed."
