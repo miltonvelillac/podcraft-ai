@@ -9,6 +9,7 @@ dependencies = [
   "langchain-openai>=1.0.0",
   "mcp[cli]>=1.0.0",
   "openai>=1.99.0",
+  "podcraft-contracts",
   "pypdf>=6.0.0",
   "python-dotenv>=1.2.0",
   "python-multipart>=0.0.20",
@@ -21,6 +22,9 @@ dev = [
   "pytest>=8.0.0",
   "ruff>=0.8.0"
 ]
+
+[tool.uv.sources]
+podcraft-contracts = { path = "packages/shared-contracts", editable = true }
 
 [tool.ruff]
 line-length = 100

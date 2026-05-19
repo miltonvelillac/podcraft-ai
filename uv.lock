@@ -785,6 +785,7 @@ dependencies = [
     { name = "langchain-openai" },
     { name = "mcp", extra = ["cli"] },
     { name = "openai" },
+    { name = "podcraft-contracts" },
     { name = "pypdf" },
     { name = "python-dotenv" },
     { name = "python-multipart" },
@@ -804,6 +805,7 @@ requires-dist = [
     { name = "langchain-openai", specifier = ">=1.0.0" },
     { name = "mcp", extras = ["cli"], specifier = ">=1.0.0" },
     { name = "openai", specifier = ">=1.99.0" },
+    { name = "podcraft-contracts", editable = "packages/shared-contracts" },
     { name = "pypdf", specifier = ">=6.0.0" },
     { name = "python-dotenv", specifier = ">=1.2.0" },
     { name = "python-multipart", specifier = ">=0.0.20" },
@@ -816,6 +818,11 @@ dev = [
     { name = "pytest", specifier = ">=8.0.0" },
     { name = "ruff", specifier = ">=0.8.0" },
 ]
+
+[[package]]
+name = "podcraft-contracts"
+version = "0.1.0"
+source = { editable = "packages/shared-contracts" }
 
 [[package]]
 name = "pycparser"

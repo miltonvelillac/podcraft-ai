@@ -5,6 +5,7 @@ from api_host.schemas.podcast_schemas import (
     PodcastStyle,
     PodcastTargetDuration,
 )
+from podcraft_contracts import PODCAST_DURATION_MINUTES
 
 
 class MockScriptGenerator:
@@ -66,12 +67,7 @@ class MockScriptGenerator:
         return bridges[language]
 
     def _duration_minutes(self, target_duration: PodcastTargetDuration) -> int:
-        durations = {
-            PodcastTargetDuration.SHORT: 2,
-            PodcastTargetDuration.MEDIUM: 4,
-            PodcastTargetDuration.LONG: 6,
-        }
-        return durations[target_duration]
+        return PODCAST_DURATION_MINUTES[target_duration.value]
 
     def _build_title(self, text: str) -> str:
         words = text.split()[:8]

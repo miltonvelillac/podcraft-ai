@@ -10,17 +10,13 @@ from audio_mcp_server.tts.errors import (
     TtsServiceError,
 )
 from audio_mcp_server.tts.provider import SynthesisRequest, SynthesisResult
+from podcraft_contracts import AUDIO_VOICE_ALIASES, LANGUAGE_NAMES
 
 
 DEFAULT_OPENAI_TTS_MODEL = "gpt-4o-mini-tts"
 DEFAULT_OPENAI_TTS_VOICE = "coral"
 DEFAULT_OPENAI_TTS_RESPONSE_FORMAT = "wav"
 DEFAULT_OPENAI_TTS_INSTRUCTIONS = "Speak clearly in a warm podcast narration style."
-OPENAI_VOICE_ALIASES = {
-    "default": DEFAULT_OPENAI_TTS_VOICE,
-    "studio": "nova",
-    "briefing": "onyx",
-}
 OPENAI_VOICES = {
     "alloy",
     "ash",
@@ -35,11 +31,6 @@ OPENAI_VOICES = {
     "sage",
     "shimmer",
     "verse",
-}
-LANGUAGE_NAMES = {
-    "en": "English",
-    "es": "Spanish",
-    "pt": "Portuguese",
 }
 
 
@@ -124,8 +115,8 @@ class OpenAiTtsProvider:
         normalized = requested_voice.strip().lower()
         if not normalized:
             return self._voice
-        if normalized in OPENAI_VOICE_ALIASES:
-            return self._voice if normalized == "default" else OPENAI_VOICE_ALIASES[normalized]
+        if normalized in AUDIO_VOICE_ALIASES:
+            return self._voice if normalized == "default" else AUDIO_VOICE_ALIASES[normalized]
         if normalized in OPENAI_VOICES:
             return normalized
 

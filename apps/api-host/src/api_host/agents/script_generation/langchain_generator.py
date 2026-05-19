@@ -8,30 +8,18 @@ from api_host.agents.script_generation.errors import (
 )
 from api_host.agents.script_generation.provider import ScriptGenerationRequest
 from api_host.schemas.podcast_schemas import (
-    PodcastLanguage,
     PodcastScript,
     PodcastStyle,
-    PodcastTargetDuration,
 )
+from podcraft_contracts import LANGUAGE_NAMES, PODCAST_DURATION_MINUTES
 
 
 DEFAULT_SCRIPT_MODEL = "gpt-4.1-mini"
-LANGUAGE_NAMES = {
-    PodcastLanguage.ENGLISH: "English",
-    PodcastLanguage.SPANISH: "Spanish",
-    PodcastLanguage.PORTUGUESE: "Portuguese",
-}
 STYLE_DESCRIPTIONS = {
     PodcastStyle.EDUCATIONAL: "educational, clear, and step-by-step",
     PodcastStyle.CONVERSATIONAL: "conversational, natural, and engaging",
     PodcastStyle.EXECUTIVE_SUMMARY: "concise, executive, and decision-focused",
 }
-DURATION_MINUTES = {
-    PodcastTargetDuration.SHORT: 2,
-    PodcastTargetDuration.MEDIUM: 4,
-    PodcastTargetDuration.LONG: 6,
-}
-
 
 class StructuredScriptModel(Protocol):
     def invoke(self, input: Any) -> PodcastScript: ...
@@ -59,8 +47,8 @@ class LangChainScriptGenerator:
                 {
                     "source_text": request.text,
                     "style": STYLE_DESCRIPTIONS[request.style],
-                    "language": LANGUAGE_NAMES[request.language],
-                    "target_minutes": DURATION_MINUTES[request.target_duration],
+                    "language": LANGUAGE_NAMES[request.language.value],
+                    "target_minutes": PODCAST_DURATION_MINUTES[request.target_duration.value],
                 }
             )
         except ScriptGenerationError:

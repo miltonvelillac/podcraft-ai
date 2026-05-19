@@ -1,0 +1,9 @@
+[project]
+name = "podcraft-contracts"
+version = "0.1.0"
+description = "Shared PodCraft AI contracts and option metadata."
+requires-python = ">=3.11"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
