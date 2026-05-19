@@ -18,7 +18,7 @@ from api_host.schemas.podcast_schemas import (
     PodcastStyle,
     PodcastTargetDuration,
 )
-from podcraft_contracts import AiProvider
+from podcraft_contracts import AiProvider, EnvVar
 
 
 def test_script_agent_uses_injected_generator() -> None:
@@ -110,6 +110,39 @@ def test_script_generation_graph_retries_invalid_script() -> None:
 
     assert generator.calls == 2
     assert result.script == "Recovered script"
+
+
+def test_script_generation_graph_reads_limits_from_environment(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    generator = FakeScriptGenerator()
+    monkeypatch.setenv(EnvVar.SCRIPT_GRAPH_MAX_SOURCE_CHARS, "19")
+    monkeypatch.setenv(EnvVar.SCRIPT_GRAPH_MAX_GENERATION_ATTEMPTS, "1")
+
+    graph = ScriptGenerationGraph(generator=generator)
+    graph.generate(
+        ScriptGenerationRequest(
+            text="Source text that should be shortened.",
+            style=PodcastStyle.EDUCATIONAL,
+            target_duration=PodcastTargetDuration.SHORT,
+            language=PodcastLanguage.ENGLISH,
+        )
+    )
+
+    assert generator.request is not None
+    assert generator.request.text == "Source text that"
+
+
+def test_script_generation_graph_rejects_invalid_env_limits(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv(EnvVar.SCRIPT_GRAPH_MAX_GENERATION_ATTEMPTS, "0")
+
+    with pytest.raises(
+        ScriptGenerationConfigurationError,
+        match="SCRIPT_GRAPH_MAX_GENERATION_ATTEMPTS must be greater than zero",
+    ):
+        ScriptGenerationGraph(generator=FakeScriptGenerator())
 
 
 def test_langchain_script_generator_requires_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
