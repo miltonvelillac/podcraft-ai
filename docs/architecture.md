@@ -17,6 +17,11 @@ PodcastPipeline
    |     `-- LangGraph workflow
    |           `-- MockScriptGenerator or LangChainScriptGenerator
    |
+   |-- ReadAloudTextPreparer
+   |     `-- TranslationMcpClient
+   |           `-- MCP STDIO -> Translation MCP Server
+   |                 `-- MockTranslationProvider or OpenAiTranslationProvider
+   |
    `-- AudioMcpClient
          `-- MCP STDIO -> Audio MCP Server
                `-- MockTtsProvider or OpenAiTtsProvider
@@ -45,6 +50,13 @@ PodcastPipeline
 - Cleans extracted text.
 - Returns document metadata.
 - Does not generate scripts or audio.
+
+### Translation MCP Server
+
+- Detects source language.
+- Translates text into the selected narration language.
+- Supports deterministic mock translation and OpenAI-backed translation.
+- Does not extract documents, generate scripts, or generate audio.
 
 ### Script Agent
 
@@ -86,12 +98,16 @@ Text/PDF
    |
 Clean source text
    |
+Source language matches selected language?
+   |-- yes -> use source text
+   `-- no  -> Translation MCP Server
+   |
 Audio MCP Server
    |
 Generated audio
 ```
 
-`read_aloud` intentionally skips the Script Agent. It is useful when the user wants narration instead of a podcast-style rewrite.
+`read_aloud` intentionally skips the Script Agent. It may still call the Translation MCP Server when the source language differs from the selected output language.
 
 ## Shared Contracts
 
@@ -105,4 +121,3 @@ Shared Python constants live in `packages/shared-contracts`:
 - generation modes
 
 This avoids duplicated string contracts across the API Host and MCP servers.
-

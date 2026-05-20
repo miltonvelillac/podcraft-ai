@@ -35,10 +35,12 @@ target-version = "py311"
 testpaths = [
   "apps/api-host/tests",
   "services/document-mcp-server/tests",
+  "services/translation-mcp-server/tests",
   "services/audio-mcp-server/tests"
 ]
 pythonpath = [
   "apps/api-host/src",
   "services/document-mcp-server/src",
+  "services/translation-mcp-server/src",
   "services/audio-mcp-server/src"
 ]

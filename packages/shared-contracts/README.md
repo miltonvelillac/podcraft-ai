@@ -6,6 +6,7 @@ The Python package `podcraft-contracts` currently centralizes values shared by t
 
 - supported podcast languages
 - UI voice aliases
+- MCP tool and payload field names
 - default podcast duration minutes
 - AI provider names such as `mock` and `openai`
 

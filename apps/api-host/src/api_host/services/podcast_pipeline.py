@@ -1,5 +1,6 @@
 from uuid import uuid4
 
+from api_host.agents.read_aloud_text_preparer import ReadAloudTextPreparer
 from api_host.agents.script_agent import ScriptAgent
 from api_host.clients.audio_mcp_client import AudioMcpClient
 from api_host.clients.document_mcp_client import DocumentMcpClient
@@ -22,10 +23,12 @@ class PodcastPipeline:
     def __init__(
         self,
         script_agent: ScriptAgent | None = None,
+        read_aloud_text_preparer: ReadAloudTextPreparer | None = None,
         audio_client: AudioMcpClient | None = None,
         document_client: DocumentMcpClient | None = None,
     ) -> None:
         self._script_agent = script_agent
+        self._read_aloud_text_preparer = read_aloud_text_preparer or ReadAloudTextPreparer()
         self._audio_client = audio_client or AudioMcpClient()
         self._document_client = document_client or DocumentMcpClient()
 
@@ -113,7 +116,10 @@ class PodcastPipeline:
         voice: str,
         language: PodcastLanguage,
     ) -> GeneratePodcastResponse:
-        normalized_text = " ".join(text.split())
+        normalized_text = await self._read_aloud_text_preparer.prepare(
+            text=text,
+            target_language=language,
+        )
         podcast_id = f"audio-{uuid4().hex[:8]}"
         duration_seconds = _estimate_read_aloud_duration_seconds(normalized_text)
         audio = await self._audio_client.generate_audio_from_text(

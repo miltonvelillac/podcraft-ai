@@ -5,13 +5,14 @@ PodCraft AI is an agentic AI application that turns plain text or PDF documents 
 The MVP supports two generation modes:
 
 - `podcast`: transforms source content into a podcast-style script before generating audio.
-- `read_aloud`: reads the source content directly as narrated audio.
+- `read_aloud`: reads the source content as narrated audio. If the detected source language differs from the selected target language, the Translation MCP Server translates the narration text before TTS.
 
 ## Why MCP
 
 MCP is used to isolate external capabilities behind tool servers:
 
 - The Document MCP Server owns PDF extraction and text cleanup.
+- The Translation MCP Server owns language detection and text translation.
 - The Audio MCP Server owns audio generation and metadata tools.
 - The API Host orchestrates the workflow and keeps reasoning logic internal.
 
@@ -26,6 +27,7 @@ FastAPI API Host / MCP Host
    |
 PodcastPipeline
    |-- DocumentMcpClient -> MCP STDIO -> Document MCP Server
+   |-- TranslationMcpClient -> MCP STDIO -> Translation MCP Server
    |-- ScriptAgent -> LangGraph -> LangChain/OpenAI or mock
    `-- AudioMcpClient -> MCP STDIO -> Audio MCP Server
                                   `-- Mock TTS or OpenAI TTS
@@ -47,7 +49,9 @@ Generation mode?
    |
    `-- read_aloud
          |
-         `-- cleaned source text
+         |-- Translation MCP Server when language differs
+         |
+         `-- cleaned or translated narration text
    |
 Audio MCP Server
    |
@@ -62,6 +66,7 @@ apps/
   web-angular/         Angular frontend
 services/
   document-mcp-server/ PDF and text processing tools
+  translation-mcp-server/ Language detection and translation tools
   audio-mcp-server/    Audio generation tools
 packages/
   shared-contracts/    Shared Python constants/contracts
@@ -93,15 +98,18 @@ Default values use mock providers so the project works without paid API calls:
 
 ```env
 SCRIPT_PROVIDER=mock
+TRANSLATION_PROVIDER=mock
 TTS_PROVIDER=mock
 ```
 
-To use OpenAI for both script generation and TTS:
+To use OpenAI for script generation, translation, and TTS:
 
 ```env
 OPENAI_API_KEY=sk-proj-...
 SCRIPT_PROVIDER=openai
 OPENAI_SCRIPT_MODEL=gpt-4.1-nano
+TRANSLATION_PROVIDER=openai
+OPENAI_TRANSLATION_MODEL=gpt-4.1-nano
 TTS_PROVIDER=openai
 OPENAI_TTS_MODEL=tts-1
 OPENAI_TTS_VOICE=coral
@@ -164,7 +172,7 @@ generated-audio
 generated-documents
 ```
 
-The API Host image includes the Document and Audio MCP server source code. The MCP servers are still invoked by the API Host over STDIO; they are not separate HTTP services in the MVP compose setup.
+The API Host image includes the Document, Translation, and Audio MCP server source code. The MCP servers are still invoked by the API Host over STDIO; they are not separate HTTP services in the MVP compose setup.
 
 ## API Examples
 
@@ -193,6 +201,8 @@ Generate direct narration from text:
   "language": "en"
 }
 ```
+
+If this text is in Spanish and `language` is `en`, `read_aloud` calls the Translation MCP Server before sending English narration text to TTS.
 
 Upload a PDF:
 
@@ -251,6 +261,7 @@ This project demonstrates:
 - LangChain structured output
 - LangGraph workflow control, validation, and retry
 - PDF extraction
+- Translation as an MCP tool capability
 - Mock and real TTS provider abstraction
 - Monorepo organization with shared contracts
 - Test coverage across API, MCP clients, MCP servers, and frontend

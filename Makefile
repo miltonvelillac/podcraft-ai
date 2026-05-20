@@ -1,4 +1,4 @@
-.PHONY: install dev web api document-server audio-server test lint
+.PHONY: install dev web api document-server translation-server audio-server test lint
 
 install:
 	corepack pnpm install
@@ -15,6 +15,9 @@ api:
 
 document-server:
 	uv run python services/document-mcp-server/src/document_mcp_server/server.py
+
+translation-server:
+	uv run python services/translation-mcp-server/src/translation_mcp_server/server.py
 
 audio-server:
 	uv run python services/audio-mcp-server/src/audio_mcp_server/server.py

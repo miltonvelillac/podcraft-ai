@@ -9,6 +9,7 @@ COPY pyproject.toml uv.lock README.md ./
 COPY packages ./packages
 COPY apps/api-host ./apps/api-host
 COPY services/document-mcp-server ./services/document-mcp-server
+COPY services/translation-mcp-server ./services/translation-mcp-server
 COPY services/audio-mcp-server ./services/audio-mcp-server
 
 RUN uv sync --frozen --no-dev

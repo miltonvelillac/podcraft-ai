@@ -76,6 +76,27 @@ def test_pipeline_generates_read_aloud_audio_without_script_agent(monkeypatch) -
     assert response.duration_seconds == 30
 
 
+def test_pipeline_sends_prepared_read_aloud_text_to_audio_client(monkeypatch) -> None:
+    monkeypatch.setenv("SCRIPT_PROVIDER", "unsupported")
+    audio_client = FakeAudioClient()
+    pipeline = PodcastPipeline(
+        read_aloud_text_preparer=FakeReadAloudTextPreparer("This text is now in English."),
+        audio_client=audio_client,
+    )
+    request = GeneratePodcastRequest(
+        generation_mode=GenerationMode.READ_ALOUD,
+        text="Este texto esta en espanol.",
+        voice="default",
+        language=PodcastLanguage.ENGLISH,
+    )
+
+    response = anyio.run(_generate_from_text, pipeline, request)
+
+    assert audio_client.script == "This text is now in English."
+    assert audio_client.language == "en"
+    assert response.script == "This text is now in English."
+
+
 async def _generate_from_pdf(
     pipeline: PodcastPipeline,
     filename: str,
@@ -102,3 +123,35 @@ async def _generate_from_text(
     request: GeneratePodcastRequest,
 ):
     return await pipeline.generate_from_text(request)
+
+
+class FakeReadAloudTextPreparer:
+    def __init__(self, prepared_text: str) -> None:
+        self._prepared_text = prepared_text
+
+    async def prepare(self, text: str, target_language: PodcastLanguage) -> str:
+        return self._prepared_text
+
+
+class FakeAudioClient:
+    def __init__(self) -> None:
+        self.script: str | None = None
+        self.language: str | None = None
+
+    async def generate_audio_from_text(
+        self,
+        podcast_id: str,
+        script: str,
+        voice: str,
+        language: str,
+        duration_seconds: int,
+    ):
+        from api_host.schemas.podcast_schemas import AudioGenerationResult
+
+        self.script = script
+        self.language = language
+        return AudioGenerationResult(
+            audio_url=f"/generated/audio/{podcast_id}.wav",
+            format="wav",
+            duration_seconds=duration_seconds,
+        )

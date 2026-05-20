@@ -26,10 +26,11 @@ Default local mode:
 
 ```env
 SCRIPT_PROVIDER=mock
+TRANSLATION_PROVIDER=mock
 TTS_PROVIDER=mock
 ```
 
-This runs without OpenAI calls. It generates deterministic mock scripts and playable mock WAV files.
+This runs without OpenAI calls. It generates deterministic mock scripts, mock translations, and playable mock WAV files.
 
 OpenAI-backed mode:
 
@@ -37,11 +38,15 @@ OpenAI-backed mode:
 OPENAI_API_KEY=sk-proj-...
 SCRIPT_PROVIDER=openai
 OPENAI_SCRIPT_MODEL=gpt-4.1-nano
+TRANSLATION_PROVIDER=openai
+OPENAI_TRANSLATION_MODEL=gpt-4.1-nano
 TTS_PROVIDER=openai
 OPENAI_TTS_MODEL=tts-1
 OPENAI_TTS_VOICE=coral
 OPENAI_TTS_RESPONSE_FORMAT=wav
 ```
+
+`read_aloud` calls the Translation MCP Server when the input text language differs from the selected output language. With `TRANSLATION_PROVIDER=openai`, Spanish source text with `language=en` is translated to English before TTS.
 
 Script graph controls:
 
@@ -105,7 +110,7 @@ api-host:    http://localhost:8000
 web-angular: http://localhost:4200
 ```
 
-The API Host image contains the Document and Audio MCP server source code. The host still calls those MCP servers through STDIO as subprocesses; Docker Compose does not run them as separate HTTP services for the MVP.
+The API Host image contains the Document, Translation, and Audio MCP server source code. The host still calls those MCP servers through STDIO as subprocesses; Docker Compose does not run them as separate HTTP services for the MVP.
 
 Generated files are stored in named Docker volumes:
 
@@ -122,6 +127,12 @@ Document MCP Server:
 
 ```bash
 uv run python services/document-mcp-server/src/document_mcp_server/server.py
+```
+
+Translation MCP Server:
+
+```bash
+uv run python services/translation-mcp-server/src/translation_mcp_server/server.py
 ```
 
 Audio MCP Server:

@@ -7,6 +7,7 @@ FastAPI backend and MCP Host for PodCraft AI.
 - Exposes HTTP endpoints consumed by the Angular frontend.
 - Orchestrates text and PDF generation flows.
 - Calls the Document MCP Server over STDIO for PDF extraction.
+- Calls the Translation MCP Server over STDIO for language detection and translation.
 - Runs the internal Script Agent for podcast generation.
 - Calls the Audio MCP Server over STDIO for audio generation.
 - Serves generated audio under `/generated`.
@@ -22,7 +23,7 @@ POST /api/podcasts/generate/pdf
 ## Generation Modes
 
 - `podcast`: source text is converted into a podcast script through the internal Script Agent.
-- `read_aloud`: source text is sent directly to audio generation after basic cleanup.
+- `read_aloud`: source text is prepared for narration and sent to audio generation. If source and target languages differ, the Host calls the Translation MCP Server before TTS.
 
 ## Script Agent
 
@@ -42,6 +43,10 @@ SCRIPT_GRAPH_MAX_SOURCE_CHARS=12000
 SCRIPT_GRAPH_MAX_GENERATION_ATTEMPTS=2
 ```
 
+## Read Aloud Text Preparation
+
+`read_aloud` does not use the Script Agent. It uses `ReadAloudTextPreparer` to normalize the text and call the Translation MCP Server. When the detected source language differs from the selected target language, the Translation MCP Server translates the narration text before the Host sends it to the Audio MCP Server.
+
 ## Run
 
 ```bash
@@ -56,7 +61,7 @@ From the repository root:
 docker compose up --build api-host
 ```
 
-The API Host container includes the Document and Audio MCP server source code because the host starts those MCP servers over STDIO.
+The API Host container includes the Document, Translation, and Audio MCP server source code because the host starts those MCP servers over STDIO.
 
 ## Test
 

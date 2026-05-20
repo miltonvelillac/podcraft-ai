@@ -16,6 +16,7 @@ PodCraft AI is positioned as:
 - LangChain structured output
 - LangGraph workflow control and retry
 - PDF extraction
+- Translation tools exposed through MCP
 - Text-to-speech generation
 - Provider abstraction for mock and real AI services
 - Shared contracts in a monorepo
@@ -44,7 +45,7 @@ PDF -> Document MCP -> ScriptAgent graph -> Audio MCP -> audio
 Shows flexible orchestration with the same audio tool:
 
 ```txt
-Text/PDF -> cleaned source text -> Audio MCP -> audio
+Text/PDF -> Translation MCP if needed -> Audio MCP -> audio
 ```
 
 ## Architecture Talking Points
@@ -52,6 +53,7 @@ Text/PDF -> cleaned source text -> Audio MCP -> audio
 - MCP servers expose tools, not reasoning.
 - The Script Agent stays internal to the Host for MVP simplicity.
 - LangGraph adds workflow control without changing the MCP boundary.
+- Read aloud translation is a separate MCP tool capability, not part of the Audio MCP Server.
 - Audio generation is provider-based, so mock and OpenAI TTS share the same host contract.
 - The frontend does not know whether audio came from a podcast script or direct narration; it only consumes the API response.
 
@@ -64,4 +66,3 @@ Text/PDF -> cleaned source text -> Audio MCP -> audio
 - Add chapter generation.
 - Add background jobs for long documents.
 - Add persistent history with a database.
-

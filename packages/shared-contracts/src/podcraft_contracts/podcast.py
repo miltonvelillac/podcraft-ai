@@ -8,9 +8,11 @@ class AiProvider(StrEnum):
 
 class EnvVar(StrEnum):
     SCRIPT_PROVIDER = "SCRIPT_PROVIDER"
+    TRANSLATION_PROVIDER = "TRANSLATION_PROVIDER"
     TTS_PROVIDER = "TTS_PROVIDER"
     OPENAI_API_KEY = "OPENAI_API_KEY"
     OPENAI_SCRIPT_MODEL = "OPENAI_SCRIPT_MODEL"
+    OPENAI_TRANSLATION_MODEL = "OPENAI_TRANSLATION_MODEL"
     SCRIPT_GRAPH_MAX_SOURCE_CHARS = "SCRIPT_GRAPH_MAX_SOURCE_CHARS"
     SCRIPT_GRAPH_MAX_GENERATION_ATTEMPTS = "SCRIPT_GRAPH_MAX_GENERATION_ATTEMPTS"
     OPENAI_TTS_MODEL = "OPENAI_TTS_MODEL"
@@ -42,6 +44,8 @@ class McpToolName(StrEnum):
     EXTRACT_TEXT_FROM_PDF = "extract_text_from_pdf"
     CLEAN_EXTRACTED_TEXT = "clean_extracted_text"
     GET_DOCUMENT_METADATA = "get_document_metadata"
+    DETECT_LANGUAGE = "detect_language"
+    TRANSLATE_TEXT = "translate_text"
     GENERATE_AUDIO_FROM_TEXT = "generate_audio_from_text"
     SAVE_AUDIO_FILE = "save_audio_file"
     GET_AUDIO_METADATA = "get_audio_metadata"
@@ -58,7 +62,11 @@ class PayloadField(StrEnum):
     PODCAST_ID = "podcast_id"
     SCRIPT = "script"
     SIZE_BYTES = "size_bytes"
+    SOURCE_LANGUAGE = "source_language"
+    SOURCE_TEXT = "source_text"
+    TARGET_LANGUAGE = "target_language"
     TEXT = "text"
+    TRANSLATED_TEXT = "translated_text"
     VOICE = "voice"
 
 
