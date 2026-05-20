@@ -163,7 +163,19 @@ npm run web:test
 2. Start the Angular frontend.
 3. Generate a podcast from plain text.
 4. Generate direct narration with `Read aloud`.
-5. Upload a PDF and generate a podcast.
-6. Verify script/text preview.
-7. Play the audio in the browser.
-8. Download the generated audio file.
+5. Generate translated narration with `Read aloud`, Spanish text, and `language=en`.
+6. Upload a PDF and generate a podcast.
+7. Verify script/text preview.
+8. Play the audio in the browser.
+9. Download the generated audio file.
+
+Translated narration smoke test:
+
+```txt
+Input mode: Text
+Generation mode: Read aloud
+Language: English
+Source text: hola me gusta la pizza
+```
+
+With `TRANSLATION_PROVIDER=openai`, the output preview should show English narration text.

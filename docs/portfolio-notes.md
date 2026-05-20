@@ -48,6 +48,12 @@ Shows flexible orchestration with the same audio tool:
 Text/PDF -> Translation MCP if needed -> Audio MCP -> audio
 ```
 
+Demo input for translated narration:
+
+```txt
+hola me gusta la pizza -> language=en -> English narration preview and audio
+```
+
 ## Architecture Talking Points
 
 - MCP servers expose tools, not reasoning.

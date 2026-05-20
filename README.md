@@ -204,6 +204,20 @@ Generate direct narration from text:
 
 If this text is in Spanish and `language` is `en`, `read_aloud` calls the Translation MCP Server before sending English narration text to TTS.
 
+Translated read-aloud demo input:
+
+```json
+{
+  "input_type": "text",
+  "generation_mode": "read_aloud",
+  "text": "hola me gusta la pizza",
+  "voice": "default",
+  "language": "en"
+}
+```
+
+With `TRANSLATION_PROVIDER=openai`, the Translation MCP Server detects Spanish and returns English narration text in the `script` field.
+
 Upload a PDF:
 
 ```bash

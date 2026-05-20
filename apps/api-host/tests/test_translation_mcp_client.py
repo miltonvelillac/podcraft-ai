@@ -1,6 +1,10 @@
 import anyio
 
 from api_host.clients.translation_mcp_client import TranslationMcpClient
+from api_host.clients.translation_mcp_client import (
+    _is_external_service_error,
+    _to_friendly_error_message,
+)
 from api_host.schemas.podcast_schemas import PodcastLanguage
 from podcraft_contracts import AiProvider
 
@@ -30,6 +34,21 @@ def test_translation_client_translates_with_mock_provider(monkeypatch) -> None:
     )
 
     assert result == "Este documento explica la arquitectura."
+
+
+def test_translation_client_maps_missing_openai_key_to_configuration_message() -> None:
+    result = _to_friendly_error_message(
+        "OPENAI_API_KEY is required when TRANSLATION_PROVIDER=openai."
+    )
+
+    assert result == (
+        "Translation is not configured. Set OPENAI_API_KEY or use "
+        "TRANSLATION_PROVIDER=mock."
+    )
+
+
+def test_translation_client_classifies_openai_auth_as_external_service_error() -> None:
+    assert _is_external_service_error("OpenAI translation authentication failed.")
 
 
 async def _detect_language(

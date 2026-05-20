@@ -1,6 +1,7 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 import { PodcastGeneratorApiService } from '../services/podcast-generator-api.service';
 import { PodcastGeneratorPageComponent } from './podcast-generator-page.component';
@@ -81,6 +82,52 @@ describe('PodcastGeneratorPageComponent', () => {
       jasmine.objectContaining({
         generation_mode: 'read_aloud',
       }),
+    );
+  });
+
+  it('renders translated narration text for read aloud responses', () => {
+    api.generateFromText.and.returnValue(
+      of({
+        podcast_id: 'audio-test',
+        title: 'Narrated Audio',
+        script: 'Hello, I like pizza.',
+        audio_url: '/generated/audio/audio-test.wav',
+        duration_seconds: 30,
+      }),
+    );
+
+    fixture.componentInstance['form'].controls.text.setValue('hola me gusta la pizza');
+    fixture.componentInstance['form'].controls.generationMode.setValue('read_aloud');
+    fixture.componentInstance['form'].controls.language.setValue('en');
+    fixture.componentInstance['generatePodcast']();
+    fixture.detectChanges();
+
+    const textContent = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(textContent).toContain('Narration Text');
+    expect(textContent).toContain('Hello, I like pizza.');
+  });
+
+  it('renders backend translation errors', () => {
+    api.generateFromText.and.returnValue(
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 400,
+            error: {
+              detail:
+                'Translation is not configured. Set OPENAI_API_KEY or use TRANSLATION_PROVIDER=mock.',
+            },
+          }),
+      ),
+    );
+
+    fixture.componentInstance['form'].controls.text.setValue('hola me gusta la pizza');
+    fixture.componentInstance['form'].controls.generationMode.setValue('read_aloud');
+    fixture.componentInstance['generatePodcast']();
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      'Translation is not configured. Set OPENAI_API_KEY or use TRANSLATION_PROVIDER=mock.',
     );
   });
 });

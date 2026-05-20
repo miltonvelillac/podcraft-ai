@@ -193,3 +193,61 @@ def test_generate_text_endpoint_returns_bad_gateway_for_script_failure(monkeypat
 
     assert response.status_code == 502
     assert response.json()["detail"] == "OpenAI script generation failed."
+
+
+def test_generate_text_endpoint_returns_bad_request_for_translation_configuration(
+    monkeypatch,
+) -> None:
+    class FailingPipeline:
+        async def generate_from_text(self, _request):
+            raise podcast_routes_module.McpToolInputError(
+                "Translation is not configured. Set OPENAI_API_KEY or use "
+                "TRANSLATION_PROVIDER=mock."
+            )
+
+    monkeypatch.setattr(podcast_routes_module, "PodcastPipeline", FailingPipeline)
+
+    response = client.post(
+        "/api/podcasts/generate/text",
+        json={
+            "input_type": "text",
+            "generation_mode": "read_aloud",
+            "text": "hola me gusta la pizza",
+            "style": "educational",
+            "voice": "default",
+            "language": "en",
+            "target_duration": "short",
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == (
+        "Translation is not configured. Set OPENAI_API_KEY or use "
+        "TRANSLATION_PROVIDER=mock."
+    )
+
+
+def test_generate_text_endpoint_returns_bad_gateway_for_translation_provider_failure(
+    monkeypatch,
+) -> None:
+    class FailingPipeline:
+        async def generate_from_text(self, _request):
+            raise McpExternalServiceError("Translation provider failed. Try again.")
+
+    monkeypatch.setattr(podcast_routes_module, "PodcastPipeline", FailingPipeline)
+
+    response = client.post(
+        "/api/podcasts/generate/text",
+        json={
+            "input_type": "text",
+            "generation_mode": "read_aloud",
+            "text": "hola me gusta la pizza",
+            "style": "educational",
+            "voice": "default",
+            "language": "en",
+            "target_duration": "short",
+        },
+    )
+
+    assert response.status_code == 502
+    assert response.json()["detail"] == "Translation provider failed. Try again."

@@ -82,9 +82,10 @@ class TranslationMcpClient:
 
         if result.isError:
             message = _extract_text_payload(result)
+            friendly_message = _to_friendly_error_message(message)
             if _is_external_service_error(message):
-                raise McpExternalServiceError(message)
-            raise McpToolInputError(message)
+                raise McpExternalServiceError(friendly_message)
+            raise McpToolInputError(friendly_message)
 
         return result
 
@@ -128,5 +129,30 @@ def _is_external_service_error(message: str) -> bool:
         "OpenAI translation rate limit exceeded",
         "OpenAI translation is temporarily unavailable",
         "OpenAI translation failed",
+        "OpenAI translation returned empty text",
     )
     return any(marker in message for marker in external_markers)
+
+
+def _to_friendly_error_message(message: str) -> str:
+    if "OPENAI_API_KEY is required" in message:
+        return (
+            "Translation is not configured. Set OPENAI_API_KEY or use "
+            "TRANSLATION_PROVIDER=mock."
+        )
+    if "Unsupported TRANSLATION_PROVIDER" in message:
+        return "Unsupported translation provider. Use mock or openai."
+    if "OpenAI translation authentication failed" in message:
+        return "Translation provider authentication failed. Check OPENAI_API_KEY."
+    if "OpenAI translation rate limit exceeded" in message:
+        return "Translation provider rate limit exceeded. Wait a moment and try again."
+    if "OpenAI translation is temporarily unavailable" in message:
+        return "Translation provider is temporarily unavailable. Try again later."
+    if "OpenAI translation returned empty text" in message:
+        return "Translation provider returned empty text. Try again with clearer input."
+    if "OpenAI translation rejected the request" in message:
+        return "Translation provider rejected the request. Check translation model settings."
+    if "OpenAI translation failed" in message:
+        return "Translation provider failed. Try again."
+
+    return message
