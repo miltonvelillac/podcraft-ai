@@ -1,5 +1,56 @@
 # API Host
 
-Python FastAPI backend and MCP Host for PodCraft AI.
+FastAPI backend and MCP Host for PodCraft AI.
 
-This service will expose HTTP endpoints for the frontend and orchestrate the internal script agent plus the document and audio MCP servers.
+## Responsibilities
+
+- Exposes HTTP endpoints consumed by the Angular frontend.
+- Orchestrates text and PDF generation flows.
+- Calls the Document MCP Server over STDIO for PDF extraction.
+- Runs the internal Script Agent for podcast generation.
+- Calls the Audio MCP Server over STDIO for audio generation.
+- Serves generated audio under `/generated`.
+
+## Endpoints
+
+```http
+GET /health
+POST /api/podcasts/generate/text
+POST /api/podcasts/generate/pdf
+```
+
+## Generation Modes
+
+- `podcast`: source text is converted into a podcast script through the internal Script Agent.
+- `read_aloud`: source text is sent directly to audio generation after basic cleanup.
+
+## Script Agent
+
+The Script Agent remains internal to the API Host. It uses `ScriptGenerationGraph` to prepare source text, call the selected generator, validate the result, and retry once when needed.
+
+Provider selection:
+
+```env
+SCRIPT_PROVIDER=mock
+SCRIPT_PROVIDER=openai
+```
+
+Graph controls:
+
+```env
+SCRIPT_GRAPH_MAX_SOURCE_CHARS=12000
+SCRIPT_GRAPH_MAX_GENERATION_ATTEMPTS=2
+```
+
+## Run
+
+```bash
+uv run uvicorn api_host.main:app --app-dir apps/api-host/src --reload --port 8000
+```
+
+## Test
+
+```bash
+uv run pytest apps/api-host/tests
+```
+

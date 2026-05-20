@@ -1,98 +1,157 @@
 # PodCraft AI
 
-PodCraft AI is an agentic AI application that transforms plain text and PDF documents into podcast-style audio using Angular, Python, FastAPI, MCP servers, and an internal script-generation agent.
+PodCraft AI is an agentic AI application that turns plain text or PDF documents into generated audio using Angular, FastAPI, MCP servers, an internal AI agent, LangChain, LangGraph, and text-to-speech.
+
+The MVP supports two generation modes:
+
+- `podcast`: transforms source content into a podcast-style script before generating audio.
+- `read_aloud`: reads the source content directly as narrated audio.
+
+## Why MCP
+
+MCP is used to isolate external capabilities behind tool servers:
+
+- The Document MCP Server owns PDF extraction and text cleanup.
+- The Audio MCP Server owns audio generation and metadata tools.
+- The API Host orchestrates the workflow and keeps reasoning logic internal.
+
+The Script Agent is intentionally **not** an MCP server in the MVP. It lives inside the API Host because it performs reasoning and transformation rather than exposing an external tool capability.
 
 ## Architecture
 
 ```txt
 Angular Frontend
    |
-Python FastAPI Backend / MCP Host
+FastAPI API Host / MCP Host
    |
-MCP Host Orchestrator
-   |-- Document MCP Server
-   |-- Internal Script Agent
-   `-- Audio MCP Server
+PodcastPipeline
+   |-- DocumentMcpClient -> MCP STDIO -> Document MCP Server
+   |-- ScriptAgent -> LangGraph -> LangChain/OpenAI or mock
+   `-- AudioMcpClient -> MCP STDIO -> Audio MCP Server
+                                  `-- Mock TTS or OpenAI TTS
    |
-Generated Podcast Audio
+Generated audio file
+```
+
+Mode-specific flow:
+
+```txt
+Text/PDF input
+   |
+Extract text if PDF
+   |
+Generation mode?
+   |-- podcast
+   |     |
+   |     `-- ScriptAgent graph -> podcast script
+   |
+   `-- read_aloud
+         |
+         `-- cleaned source text
+   |
+Audio MCP Server
+   |
+audio_url + duration
 ```
 
 ## Monorepo Layout
 
 ```txt
 apps/
-  web-angular/
-  api-host/
+  api-host/            FastAPI API and MCP Host
+  web-angular/         Angular frontend
 services/
-  document-mcp-server/
-  audio-mcp-server/
+  document-mcp-server/ PDF and text processing tools
+  audio-mcp-server/    Audio generation tools
 packages/
-  shared-contracts/
+  shared-contracts/    Shared Python constants/contracts
 docs/
+  architecture.md
+  mcp-flow.md
+  local-development.md
+  portfolio-notes.md
 generated/
+  audio/
 ```
 
-## Local Tooling
+## Requirements
 
-- `pnpm` for frontend workspace commands.
-- `uv` for Python dependency management.
-- `docker compose` for local orchestration.
-- `make` for common commands.
+- Python 3.11+
+- `uv`
+- Node.js
+- `pnpm` through Corepack
 
-## Local Development
+## Environment
 
-Install Python dependencies:
-
-```bash
-uv sync
-```
-
-Copy environment variables:
+Create a local `.env` from the example:
 
 ```bash
 cp .env.example .env
 ```
 
-The default `.env.example` keeps AI providers in mock mode. To use OpenAI-backed script generation through LangChain and real OpenAI TTS, configure:
+Default values use mock providers so the project works without paid API calls:
+
+```env
+SCRIPT_PROVIDER=mock
+TTS_PROVIDER=mock
+```
+
+To use OpenAI for both script generation and TTS:
 
 ```env
 OPENAI_API_KEY=sk-proj-...
 SCRIPT_PROVIDER=openai
-OPENAI_SCRIPT_MODEL=gpt-4.1-mini
+OPENAI_SCRIPT_MODEL=gpt-4.1-nano
 TTS_PROVIDER=openai
-OPENAI_TTS_MODEL=gpt-4o-mini-tts
+OPENAI_TTS_MODEL=tts-1
+OPENAI_TTS_VOICE=coral
+OPENAI_TTS_RESPONSE_FORMAT=wav
 ```
 
-Start the FastAPI host:
+LangGraph script guardrails are configurable:
+
+```env
+SCRIPT_GRAPH_MAX_SOURCE_CHARS=12000
+SCRIPT_GRAPH_MAX_GENERATION_ATTEMPTS=2
+```
+
+## Local Development
+
+Install dependencies:
+
+```bash
+uv sync
+corepack pnpm install
+```
+
+Run the API Host:
 
 ```bash
 uv run uvicorn api_host.main:app --app-dir apps/api-host/src --reload --port 8000
 ```
 
-Then open Swagger:
+Run the Angular frontend:
 
-```txt
-http://localhost:8000/docs
+```bash
+npm run web:start
 ```
 
-Health check:
+Useful URLs:
 
 ```txt
-http://localhost:8000/health
+Frontend: http://localhost:4200
+API docs: http://localhost:8000/docs
+Health:   http://localhost:8000/health
 ```
 
-Generate podcast endpoints:
+## API Examples
 
-```txt
-POST http://localhost:8000/api/podcasts/generate/text
-POST http://localhost:8000/api/podcasts/generate/pdf
-```
-
-Example JSON body for text input:
+Generate a podcast from text:
 
 ```json
 {
   "input_type": "text",
+  "generation_mode": "podcast",
   "text": "FastAPI coordinates the podcast generation workflow.",
   "style": "educational",
   "voice": "default",
@@ -101,93 +160,76 @@ Example JSON body for text input:
 }
 ```
 
-Example PDF upload with curl:
+Generate direct narration from text:
+
+```json
+{
+  "input_type": "text",
+  "generation_mode": "read_aloud",
+  "text": "Read this text directly without turning it into a podcast script.",
+  "voice": "default",
+  "language": "en"
+}
+```
+
+Upload a PDF:
 
 ```bash
 curl -X POST http://localhost:8000/api/podcasts/generate/pdf \
   -F "file=@example.pdf" \
+  -F "generation_mode=podcast" \
   -F "style=educational" \
   -F "voice=default" \
   -F "language=en" \
   -F "target_duration=short"
 ```
 
+Example response:
+
+```json
+{
+  "podcast_id": "podcast-1234abcd",
+  "title": "Generated Podcast Title",
+  "script": "Welcome to today's episode...",
+  "audio_url": "/generated/audio/podcast-1234abcd.wav",
+  "duration_seconds": 120
+}
+```
+
 ## Tests
 
-Run all Python tests:
+Run Python tests:
 
 ```bash
 uv run pytest
 ```
 
-Run only the API host tests:
-
-```bash
-uv run pytest apps/api-host/tests
-```
-
-Run one specific test file:
-
-```bash
-uv run pytest apps/api-host/tests/test_podcast_pipeline.py
-```
-
-Run linting:
+Run Python lint:
 
 ```bash
 uv run ruff check .
 ```
 
-## Make Commands
-
-The root `Makefile` also provides shortcuts:
+Run frontend build and tests:
 
 ```bash
-make api
-make test
-make lint
-make dev
+npm run web:build
+npm run web:test
 ```
 
-Current command meanings:
+## Portfolio Value
 
-- `make api` starts the FastAPI host on port `8000`.
-- `make test` runs Python tests and frontend tests.
-- `make lint` runs Ruff for Python code.
-- `make dev` starts Docker Compose.
+This project demonstrates:
 
-## Current Status
+- Angular frontend development with typed API integration
+- FastAPI API design
+- MCP host orchestration over STDIO
+- Python MCP servers
+- Internal AI agent design
+- LangChain structured output
+- LangGraph workflow control, validation, and retry
+- PDF extraction
+- Mock and real TTS provider abstraction
+- Monorepo organization with shared contracts
+- Test coverage across API, MCP clients, MCP servers, and frontend
 
-This repository currently contains the base monorepo configuration, a FastAPI host, a `/health` endpoint, podcast generation endpoints for text and PDF input, real local PDF text extraction through the Document MCP Server, optional LangChain/OpenAI script generation inside the API Host, and mock or OpenAI-backed audio generation through the Audio MCP Server.
-
-## MCP Integration Status
-
-The API Host now uses `DocumentMcpClient` and `AudioMcpClient` to call the Document and Audio MCP Servers through STDIO. PDF bytes are base64-encoded before being sent through MCP because MCP messages are JSON-RPC payloads.
-
-Current MCP flow:
-
-```txt
-API Host
-   |
-DocumentMcpClient / AudioMcpClient
-   |
-MCP STDIO transport
-   |
-Document MCP Server / Audio MCP Server
-   |
-Document tools / Audio tools
-```
-
-STDIO is the intended MCP transport for the MVP because it keeps local orchestration simple. After the MVP is working end to end, Streamable HTTP should be considered for running the Document and Audio MCP Servers as independent services, especially under Docker Compose.
-
-The Script Agent remains internal to the API Host for the MVP. It must not be converted into an MCP server in the first version.
-
-Script generation is provider-based:
-
-```txt
-ScriptAgent
-  |-- MockScriptGenerator
-  `-- LangChainScriptGenerator
-```
-
-Use `SCRIPT_PROVIDER=mock` for deterministic local development and tests. Use `SCRIPT_PROVIDER=openai` to generate podcast scripts with LangChain and OpenAI structured output.
