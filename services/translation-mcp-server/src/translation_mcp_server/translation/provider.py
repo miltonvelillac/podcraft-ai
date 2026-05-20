@@ -15,4 +15,6 @@ class TranslationResult:
 
 
 class TranslationProvider(Protocol):
+    def detect_language(self, text: str) -> str | None: ...
+
     def translate(self, request: TranslationRequest) -> TranslationResult: ...

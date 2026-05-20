@@ -1,4 +1,10 @@
+from typing import Protocol
+
 from podcraft_contracts import LanguageCode
+
+
+class LanguageDetectionProvider(Protocol):
+    def detect_language(self, text: str) -> str | None: ...
 
 
 LANGUAGE_MARKERS = {
@@ -45,7 +51,19 @@ LANGUAGE_CHAR_MARKERS = {
 }
 
 
-def detect_language(text: str) -> str | None:
+def detect_language(
+    text: str,
+    provider: LanguageDetectionProvider | None = None,
+) -> str | None:
+    if provider is None:
+        from translation_mcp_server.translation import build_translation_provider
+
+        provider = build_translation_provider()
+
+    return provider.detect_language(text)
+
+
+def detect_language_with_rules(text: str) -> str | None:
     normalized_text = f" {text.lower()} "
     scores = {
         language: sum(marker in normalized_text for marker in markers)

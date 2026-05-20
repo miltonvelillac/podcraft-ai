@@ -7,7 +7,7 @@ The server runs over MCP STDIO and exposes:
 - `detect_language`
 - `translate_text`
 
-`detect_language` returns a supported language code when the source text is clear enough.
+`detect_language` returns a supported language code when the source text is clear enough. In mock mode it uses local heuristics; in OpenAI mode it asks the configured model.
 `translate_text` translates narration text to the selected target language.
 
 ## Providers

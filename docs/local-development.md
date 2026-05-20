@@ -46,7 +46,7 @@ OPENAI_TTS_VOICE=coral
 OPENAI_TTS_RESPONSE_FORMAT=wav
 ```
 
-`read_aloud` calls the Translation MCP Server when the input text language differs from the selected output language. With `TRANSLATION_PROVIDER=openai`, Spanish source text with `language=en` is translated to English before TTS.
+`read_aloud` calls the Translation MCP Server when the input text language differs from the selected output language. With `TRANSLATION_PROVIDER=openai`, source-language detection and translation both use the configured OpenAI model before TTS.
 
 Script graph controls:
 

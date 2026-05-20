@@ -5,7 +5,9 @@ from podcraft_contracts import LanguageCode, PayloadField
 from translation_mcp_server.server import detect_language_tool, translate_text_mcp_tool
 
 
-def test_detect_language_tool_returns_language_payload() -> None:
+def test_detect_language_tool_returns_language_payload(monkeypatch) -> None:
+    monkeypatch.setenv("TRANSLATION_PROVIDER", "mock")
+
     result = detect_language_tool(
         text="Este documento explica la arquitectura y los pasos para generar audio."
     )

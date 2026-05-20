@@ -14,7 +14,12 @@ mcp = FastMCP("PodCraft Translation MCP Server")
 @mcp.tool(name=McpToolName.DETECT_LANGUAGE)
 def detect_language_tool(text: str) -> dict[str, str | None]:
     """Detect the source language for text that may need translation."""
-    return {PayloadField.SOURCE_LANGUAGE: detect_language(text)}
+    try:
+        source_language = detect_language(text)
+    except (ValueError, TranslationProviderError) as exc:
+        raise ToolError(str(exc)) from exc
+
+    return {PayloadField.SOURCE_LANGUAGE: source_language}
 
 
 @mcp.tool(name=McpToolName.TRANSLATE_TEXT)

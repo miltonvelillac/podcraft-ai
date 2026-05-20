@@ -37,6 +37,26 @@ class OpenAiTranslationProvider:
             DEFAULT_OPENAI_TRANSLATION_MODEL,
         )
 
+    def detect_language(self, text: str) -> str | None:
+        normalized_text = " ".join(text.split())
+        if not normalized_text:
+            return None
+
+        try:
+            chain = self._build_language_detection_chain()
+            result = chain.invoke(
+                {
+                    "supported_languages": _supported_language_instructions(),
+                    "source_text": normalized_text,
+                }
+            )
+        except TranslationProviderError:
+            raise
+        except Exception as exc:
+            raise _to_translation_error(exc) from exc
+
+        return _extract_language_code(_extract_text_result(result))
+
     def translate(self, request: TranslationRequest) -> TranslationResult:
         target_language_name = _language_name(request.target_language)
         try:
@@ -96,12 +116,72 @@ class OpenAiTranslationProvider:
         )
         return prompt | ChatOpenAI(model=self._model_name, temperature=0)
 
+    def _build_language_detection_chain(self) -> TextTranslationModel:
+        if self._model is not None and self._prompt is not None:
+            return self._prompt | self._model
+        if self._model is not None:
+            return self._model
+
+        if not os.getenv(EnvVar.OPENAI_API_KEY):
+            raise TranslationConfigurationError(
+                f"{EnvVar.OPENAI_API_KEY} is required when "
+                f"{EnvVar.TRANSLATION_PROVIDER}=openai."
+            )
+
+        try:
+            from langchain_core.prompts import ChatPromptTemplate
+            from langchain_openai import ChatOpenAI
+        except ImportError as exc:
+            raise TranslationConfigurationError(
+                "langchain-openai is required when translation uses OpenAI."
+            ) from exc
+
+        prompt = ChatPromptTemplate.from_messages(
+            [
+                (
+                    "system",
+                    "You detect source language for text-to-speech preparation. "
+                    "Return only one language code from the supported list, or none.",
+                ),
+                (
+                    "human",
+                    "Supported languages:\n{supported_languages}\n\n"
+                    "Detect the source language of this text. "
+                    "Return only the language code, such as en, es, pt, or none "
+                    "if the language is unclear.\n\n"
+                    "Source text:\n{source_text}",
+                ),
+            ]
+        )
+        return prompt | ChatOpenAI(model=self._model_name, temperature=0)
+
 
 def _language_name(language: str) -> str:
     language_name = LANGUAGE_NAMES.get(language)
     if language_name is None:
         raise TranslationConfigurationError(f"Unsupported translation language: {language}.")
     return language_name
+
+
+def _supported_language_instructions() -> str:
+    return "\n".join(
+        f"- {language_code}: {language_name}"
+        for language_code, language_name in LANGUAGE_NAMES.items()
+    )
+
+
+def _extract_language_code(text: str) -> str | None:
+    normalized = text.strip().lower().strip(" .,:;")
+    if not normalized or normalized in {"none", "unknown", "unclear", "n/a"}:
+        return None
+    if normalized in LANGUAGE_NAMES:
+        return normalized
+
+    for language_code, language_name in LANGUAGE_NAMES.items():
+        if normalized == language_name.lower():
+            return language_code
+
+    return None
 
 
 def _extract_text_result(result: Any) -> str:
