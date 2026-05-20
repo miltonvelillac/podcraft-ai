@@ -48,9 +48,18 @@ SCRIPT_GRAPH_MAX_GENERATION_ATTEMPTS=2
 uv run uvicorn api_host.main:app --app-dir apps/api-host/src --reload --port 8000
 ```
 
+## Run With Docker
+
+From the repository root:
+
+```bash
+docker compose up --build api-host
+```
+
+The API Host container includes the Document and Audio MCP server source code because the host starts those MCP servers over STDIO.
+
 ## Test
 
 ```bash
 uv run pytest apps/api-host/tests
 ```
-

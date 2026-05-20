@@ -1,0 +1,12 @@
+{
+  "/api": {
+    "target": "http://api-host:8000",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/generated": {
+    "target": "http://api-host:8000",
+    "secure": false,
+    "changeOrigin": true
+  }
+}

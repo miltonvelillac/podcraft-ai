@@ -35,3 +35,13 @@ Run a production build:
 ```bash
 npm run web:build
 ```
+
+## Docker
+
+From the repository root:
+
+```bash
+docker compose up --build web-angular
+```
+
+The Docker Compose command uses `proxy.docker.conf.json`, which forwards `/api` and `/generated` to the `api-host` service inside the Compose network.

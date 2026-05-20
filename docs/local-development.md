@@ -82,6 +82,38 @@ Open:
 http://localhost:4200
 ```
 
+## Run With Docker Compose
+
+Create `.env` first:
+
+```bash
+cp .env.example .env
+```
+
+Start the stack:
+
+```bash
+docker compose up --build
+```
+
+Docker Desktop must be running before this command. On Windows, make sure the Linux engine is available.
+
+Services:
+
+```txt
+api-host:    http://localhost:8000
+web-angular: http://localhost:4200
+```
+
+The API Host image contains the Document and Audio MCP server source code. The host still calls those MCP servers through STDIO as subprocesses; Docker Compose does not run them as separate HTTP services for the MVP.
+
+Generated files are stored in named Docker volumes:
+
+```txt
+generated-audio
+generated-documents
+```
+
 ## Direct MCP Server Commands
 
 The API Host starts MCP servers over STDIO when needed, but they can also be run directly for debugging.
@@ -124,4 +156,3 @@ npm run web:test
 6. Verify script/text preview.
 7. Play the audio in the browser.
 8. Download the generated audio file.
-

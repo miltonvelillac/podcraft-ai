@@ -1,0 +1,17 @@
+.git
+.venv
+node_modules
+**/node_modules
+.angular
+.pytest_cache
+.ruff_cache
+coverage
+apps/web-angular/dist
+generated/audio/*
+generated/documents/*
+!.gitkeep
+*.pyc
+__pycache__
+.env
+.env.*
+!.env.example

@@ -1,14 +1,14 @@
 .PHONY: install dev web api document-server audio-server test lint
 
 install:
-	pnpm install
+	corepack pnpm install
 	uv sync
 
 dev:
 	docker compose up --build
 
 web:
-	pnpm web:start
+	npm run web:start
 
 api:
 	uv run uvicorn api_host.main:app --app-dir apps/api-host/src --reload --port 8000
@@ -21,7 +21,7 @@ audio-server:
 
 test:
 	uv run pytest
-	pnpm web:test
+	npm run web:test
 
 lint:
 	uv run ruff check .

@@ -1,33 +1,50 @@
 services:
   api-host:
-    image: ghcr.io/astral-sh/uv:python3.12-bookworm-slim
-    working_dir: /workspace
-    command: uv run uvicorn api_host.main:app --app-dir apps/api-host/src --host 0.0.0.0 --port 8000
+    build:
+      context: .
+      dockerfile: apps/api-host/Dockerfile
+    env_file:
+      - .env
     ports:
       - "8000:8000"
     volumes:
-      - .:/workspace
-    env_file:
-      - .env.example
+      - generated-audio:/app/generated/audio
+      - generated-documents:/app/generated/documents
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "uv",
+          "run",
+          "--no-sync",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  document-mcp-server:
-    image: ghcr.io/astral-sh/uv:python3.12-bookworm-slim
-    working_dir: /workspace
-    command: uv run python services/document-mcp-server/src/document_mcp_server/server.py
+  web-angular:
+    build:
+      context: .
+      dockerfile: apps/web-angular/Dockerfile
+    command:
+      [
+        "corepack",
+        "pnpm",
+        "--config.verify-deps-before-run=false",
+        "--dir",
+        "apps/web-angular",
+        "run",
+        "start:docker",
+      ]
+    depends_on:
+      api-host:
+        condition: service_healthy
     ports:
-      - "8101:8101"
-    volumes:
-      - .:/workspace
-    env_file:
-      - .env.example
+      - "4200:4200"
 
-  audio-mcp-server:
-    image: ghcr.io/astral-sh/uv:python3.12-bookworm-slim
-    working_dir: /workspace
-    command: uv run python services/audio-mcp-server/src/audio_mcp_server/server.py
-    ports:
-      - "8102:8102"
-    volumes:
-      - .:/workspace
-    env_file:
-      - .env.example
+volumes:
+  generated-audio:
+  generated-documents:

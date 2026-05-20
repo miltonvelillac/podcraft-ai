@@ -144,6 +144,28 @@ API docs: http://localhost:8000/docs
 Health:   http://localhost:8000/health
 ```
 
+## Docker Compose
+
+Create `.env` first, then run:
+
+```bash
+docker compose up --build
+```
+
+Compose starts:
+
+- `api-host` on `http://localhost:8000`
+- `web-angular` on `http://localhost:4200`
+
+Generated audio and document folders are mounted as Docker volumes:
+
+```txt
+generated-audio
+generated-documents
+```
+
+The API Host image includes the Document and Audio MCP server source code. The MCP servers are still invoked by the API Host over STDIO; they are not separate HTTP services in the MVP compose setup.
+
 ## API Examples
 
 Generate a podcast from text:
@@ -232,4 +254,3 @@ This project demonstrates:
 - Mock and real TTS provider abstraction
 - Monorepo organization with shared contracts
 - Test coverage across API, MCP clients, MCP servers, and frontend
-
